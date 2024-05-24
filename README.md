@@ -1,2 +1,33 @@
 # GI Tweaks
-This package contains various tools and tweaks for working with global illumination in Unity.
+This package contains various tools and tweaks for working with global illumination in Unity. Tested with Unity 2022.3 on the Builtin Render Pipeline.
+
+## Current features
+
+### Mass select renderers
+Making bulk lighting-related changes to renderers in a large scene is tedious. This tool provides a simple way to mass-select renderers based on some configurable filters, for the purpose of multi-editing them.
+
+![image](https://github.com/pema99/GITweaks/assets/11212115/95754281-4f98-4d1a-a480-542b3a2f7523)
+
+### Share lightmap space across all LODs
+TODO: Describe
+
+### Show lightmap flags in default material inspector
+Unity has a hidden `MaterialGlobalIlluminationFlags` on each material, which must be set in order for baked emission to work. It is in't shown in the inspector by default. This tweak shows it.
+
+![image](https://github.com/pema99/GITweaks/assets/11212115/bfdd1ef7-5dfe-4c81-84bf-891b06583f06)
+
+### Automatic embedded Lighting Settings
+When you create a new scene in Unity, it will by default have no Lighting Settings asset assigned, and you won't be able to edit any settings without creating one. This tweak instead assigns a new embedded Lighting Settings asset which is serialized directly into the scene, letting you immediately modify settings without having to create an additional asset.
+
+Before:
+
+![fJ3RSEK0VC](https://github.com/pema99/GITweaks/assets/11212115/3fe8e37d-1826-4b93-b67c-4b8702df0c41)
+
+After:
+
+![N9cgB5O7BE](https://github.com/pema99/GITweaks/assets/11212115/bd2e34ba-4b42-4d61-920d-512e4a0dcc5b)
+
+### Better default Lighting Settings
+When you create a new scene or Lighting Settings asset, the CPU lightmapper is the default choice of baking backend. The CPU lightmap is very slow and shouldn't be used if you have a GPU. This tweak changes the default to be the GPU lightmapper. Additionally, it disables the "Progressive Updates" checkbox by default, which can slow down bakes heavily.
+
+![image](https://github.com/pema99/GITweaks/assets/11212115/ae230e33-39be-4bef-bedc-6c61bedc50b8)
