@@ -18,10 +18,12 @@ public class GITweaksWindow : EditorWindow
     - Easily switch between lighting settings
     - Seam stitching across meshes
     - Shadow only debug view
-    - Reassign Shadowmask indices without rebake
+    - Reassign Shadowmask indices without rebake (component)
     - Change lightmapped renderer to probe lit without needing rebake
     - Click to highlight object in lightmap preview window
     - Probe placement projection guide
+    - Auto assign sun source env
+    - Create default skybox button
     X Show lightmap flags in inspector for material
     X View all renderers by receive GI mode
     X Auto GPU lightmapper selection + no prioritize view
