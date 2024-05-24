@@ -11,8 +11,8 @@ public class GITweaksLDAInspector : Editor
 
     public override void OnInspectorGUI()
     {
-        inspectorModeSelf.SetValue(this, InspectorMode.DebugInternal);
-        inspectorModeObject.SetValue(serializedObject, InspectorMode.DebugInternal);
+        //inspectorModeSelf.SetValue(this, InspectorMode.DebugInternal);
+        //inspectorModeObject.SetValue(serializedObject, InspectorMode.DebugInternal);
         base.OnInspectorGUI();
     }
 }

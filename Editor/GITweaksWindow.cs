@@ -18,12 +18,12 @@ public class GITweaksWindow : EditorWindow
     X Auto GPU lightmapper selection + no prioritize view
     X Auto embedded lighting settings
     - Transparency view mode
-    - Move LODs to overlap on lightmap
+    X Move LODs to overlap on lightmap
     - Switch between lighting settings
     - Lighting settings template override
     - Seam stitching across meshes
     - Shadow only debug view
-    - Better LDA inspector
+    X Better LDA inspector
     Harmony based:
         - Reassign Shadowmask indices
         - Don't need rebake when change lightmap to light probe

@@ -89,10 +89,10 @@ public static class GITweaksLightingDataAssetEditor
 
         // Find LOD0
         int lm0Index = -1;
-        var lmIds = o.FindProperty("m_LightmappedRendererDataIDs");
+        using var lmIds = o.FindProperty("m_LightmappedRendererDataIDs");
         for (int i = 0; i < lmIds.arraySize; i++)
         {
-            var elem = lmIds.GetArrayElementAtIndex(i);
+            using var elem = lmIds.GetArrayElementAtIndex(i);
             elem.Next(true);
             long main = elem.longValue;
             elem.Next(false);
@@ -118,17 +118,17 @@ public static class GITweaksLightingDataAssetEditor
 
             // Set SOI
             var newSOI = ObjectToSOI(newMr);
-            var soiData = lmIds.GetArrayElementAtIndex(lmIndex);
+            using var soiData = lmIds.GetArrayElementAtIndex(lmIndex);
             soiData.Next(true);
             soiData.longValue = newSOI.MainLFID;
             soiData.Next(false);
             soiData.longValue = newSOI.PrefabLFID;
 
             // Set atlas data
-            var fromAtlasData = lmVals.GetArrayElementAtIndex(lm0Index);
-            var fromAtlasDataEnd = fromAtlasData.Copy();
+            using var fromAtlasData = lmVals.GetArrayElementAtIndex(lm0Index);
+            using var fromAtlasDataEnd = fromAtlasData.Copy();
             fromAtlasDataEnd.Next(false);
-            var toAtlasData = lmVals.GetArrayElementAtIndex(i);
+            using var toAtlasData = lmVals.GetArrayElementAtIndex(lmIndex);
             toAtlasData.Next(true);
             fromAtlasData.Next(true);
             while (!SerializedProperty.EqualContents(fromAtlasData, fromAtlasDataEnd))
