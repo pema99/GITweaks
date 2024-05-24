@@ -1,0 +1,20 @@
+{
+    "name": "GITweaks",
+    "rootNamespace": "",
+    "references": [
+        "GUID:8973f39a683868b42a349f2e1dfb47f4"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "0Harmony_GITweaks.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
