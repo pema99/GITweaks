@@ -13,22 +13,21 @@ public class GITweaksWindow : EditorWindow
 {
     /* TODO:
     - Toggles for each tweak
+    - Transparency view mode
+    - Lighting settings template override
+    - Easily switch between lighting settings
+    - Seam stitching across meshes
+    - Shadow only debug view
+    - Reassign Shadowmask indices without rebake
+    - Change lightmapped renderer to probe lit without needing rebake
+    - Click to highlight object in lightmap preview window
+    - Probe placement projection guide
     X Show lightmap flags in inspector for material
     X View all renderers by receive GI mode
     X Auto GPU lightmapper selection + no prioritize view
     X Auto embedded lighting settings
-    - Transparency view mode
     X Move LODs to overlap on lightmap
-    - Switch between lighting settings
-    - Lighting settings template override
-    - Seam stitching across meshes
-    - Shadow only debug view
     X Better LDA inspector
-    Harmony based:
-        - Reassign Shadowmask indices
-        - Don't need rebake when change lightmap to light probe
-        - Click to highlight object in preview
-        - Probe placement projection guide
     Not possible:
         - Preview atlassing (might not be possible 2022)
         - Ability to move or rebake probes post bake (not possible 2022)
