@@ -20,10 +20,13 @@ public class GITweaksWindow : EditorWindow
     - Shadow only debug view
     - Reassign Shadowmask indices without rebake (component)
     - Change lightmapped renderer to probe lit without needing rebake
-    - Click to highlight object in lightmap preview window
     - Probe placement projection guide
     - Auto assign sun source env
     - Create default skybox button
+    - Dont disable receive gi in inspector (so you can multi edit)
+    - Atlassing post bake optim
+    - 2 mode shadowmask override
+    X Click to highlight object in lightmap preview window
     X Show lightmap flags in inspector for material
     X View all renderers by receive GI mode
     X Auto GPU lightmapper selection + no prioritize view
