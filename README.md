@@ -80,3 +80,9 @@ After:
 
 ![Unity_Vdixu05Zlp](https://github.com/pema99/GITweaks/assets/11212115/713c5598-3857-4e33-8c60-160cc35ceded)
 
+### New and Clone buttons for Skybox material
+This tweak adds some buttons for quickly creating new Skybox Materials and assigning them in the Environment tab of the Lighting Window.
+
+![image](https://github.com/pema99/GITweaks/assets/11212115/43c6cc79-96d1-4302-b310-de252b08d6c5)
+
+
