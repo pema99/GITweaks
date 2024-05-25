@@ -5,11 +5,6 @@ All features can be toggled via the settings window in "Tools > GI Tweaks > Sett
 
 ## Current features
 
-### Bulk select renderers
-Making bulk lighting-related changes to renderers in a large scene is tedious. This tool provides a simple way to mass-select renderers based on some configurable filters, for the purpose of multi-editing them. Accesible via "Tools > GI Tweaks > Bulk Renderer Selection".
-
-![image](https://github.com/pema99/GITweaks/assets/11212115/95754281-4f98-4d1a-a480-542b3a2f7523)
-
 ### Share lightmap space across all LODs
 When using LOD groups, if you use lightmapping for several LOD levels, each LOD level will take up its own space in the lightmap. This tweak adds a script "GI Tweaks Shared LOD" which lets you reuse the same lightmap space for several LOD levels. Simply attach the script to the GameObject that has the LOD group and bake. Unlike some of the other solutions that exist for this, the script will edit the LightingDataAsset stored on disk, meaning you don't need to manually fiddle with lightmap indices, scales and offsets at runtime.
 
@@ -23,6 +18,11 @@ For reference, the same scene baked with the script disabled, and using lightmap
 The Lightmap Preview window can highlight the UV chart of the currently selectec object. However, you cannot inversely click on a chart to select the corresponding object. This tweak adds that functionality.
 
 ![ZFvbglRVTT](https://github.com/pema99/GITweaks/assets/11212115/ec36ed87-5bdf-489d-b94d-cbe8c5595bd4)
+
+### Bulk select renderers
+Making bulk lighting-related changes to renderers in a large scene is tedious. This tool provides a simple way to mass-select renderers based on some configurable filters, for the purpose of multi-editing them. Accesible via "Tools > GI Tweaks > Bulk Renderer Selection".
+
+![image](https://github.com/pema99/GITweaks/assets/11212115/95754281-4f98-4d1a-a480-542b3a2f7523)
 
 ### Baked Transmission view modes
 The rules for what is considered transmissive/transparent by the builtin lightmapper are somewhat opaque. These added scene view modes allow for easy identification and debugging of transparents. There are 2 modes, both accessible from the scene view toolbar:
