@@ -1,7 +1,7 @@
 # GI Tweaks
-**This is a work in progress, and may contain bugs.**
-
 This package contains various tools and tweaks for working with global illumination in Unity. Tested with Unity 2022.3 on the Builtin Render Pipeline. [Harmony](https://github.com/pardeike/Harmony) is used for making patches.
+
+All features can be toggled via the settings window in "Tools > GI Tweaks > Settings".
 
 ## Current features
 
