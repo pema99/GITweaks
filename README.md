@@ -24,6 +24,18 @@ The Lightmap Preview window can highlight the UV chart of the currently selectec
 
 ![ZFvbglRVTT](https://github.com/pema99/GITweaks/assets/11212115/ec36ed87-5bdf-489d-b94d-cbe8c5595bd4)
 
+### Baked Transmission view modes
+The rules for what is considered transmissive/transparent by the builtin lightmapper are somewhat opaque. These added scene view modes allow for easy identification and debugging of transparents. There are 2 modes, both accessible from the scene view toolbar:
+![image](https://github.com/pema99/GITweaks/assets/11212115/ddd63e87-da58-4183-a756-ef1b47aab180)
+
+"Baked Transmission Modes" displays what the baker sees as transmissive:
+
+![Unity_c35PO3McfI](https://github.com/pema99/GITweaks/assets/11212115/5e7eed73-ac73-4a8a-907e-1d65b4d8ae8a)
+
+"Baked Transmission Data" displays the actual transmission textures fed to the baker:
+
+![uwJ51JYeAA](https://github.com/pema99/GITweaks/assets/11212115/783bedb2-0e4e-46dd-a9b0-826f8c2b6e62)
+
 ### Better Lighting Data asset inspector
 The output of the a bake - the Lighting Data asset - is a black box. The asset's inspector doesn't show any information about the contents. This tweak changes the default inspector to display all the contained data. Warning: Modifying this data can screw up your bake. Any issues should be resolved by simply rebaking, though.
 
