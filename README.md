@@ -3,6 +3,14 @@ This package contains various tools and tweaks for working with global illuminat
 
 All features can be toggled via the settings window in "Tools > GI Tweaks > Settings".
 
+## How to install
+
+1. Open the package manager (Window > Package Manager).
+2. Press the big plus icon, select "Install package for git URL"
+3. Paste the URL of the repo `https://github.com/pema99/GITweaks.git` and click install.
+
+![image](https://github.com/pema99/GITweaks/assets/11212115/133bdd9c-7f87-4714-8b1f-ed5eece77c95)
+
 ## Current features
 
 ### Share lightmap space across all LODs
