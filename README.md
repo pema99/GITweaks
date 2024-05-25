@@ -80,6 +80,11 @@ After:
 
 ![Unity_Vdixu05Zlp](https://github.com/pema99/GITweaks/assets/11212115/713c5598-3857-4e33-8c60-160cc35ceded)
 
+### Convert lightmapped renderer to probe-lit without rebaking
+When you have a lightmapped renderer, and you want to change it to be lit by probes, changing the setting in the inspector won't immediately make the change. For the setting to apply, you must bake again! This tweak adds a button to the inspector that only appears when you have changed a previously lightmapped renderer to be probe-lit, and allows you to immediately apply the change to the Lighting Data asset without having to re-bake.
+
+![6C1yre8Mth](https://github.com/pema99/GITweaks/assets/11212115/1cceef7a-e976-4283-b9db-a5ade9cd09cb)
+
 ### New and Clone buttons for Skybox material
 This tweak adds some buttons for quickly creating new Skybox Materials and assigning them in the Environment tab of the Lighting Window.
 
