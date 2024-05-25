@@ -64,7 +64,7 @@ public class GITweaksSettingsWindow : EditorWindow
             .Invoke(null, new object[0]);
     }
 
-    bool tweakToggles = true;
+    bool tweakTogglesHeader = true;
 
     private void ShowTweakToggle(GITweak tweak, string label)
     {
@@ -80,22 +80,25 @@ public class GITweaksSettingsWindow : EditorWindow
 
     public void OnGUI()
     {
-        tweakToggles = EditorGUILayout.BeginFoldoutHeaderGroup(tweakToggles, "Tweak toggles");
-        ShowTweakToggle(GITweak.ClickableLightmapCharts, "Clickable charts in Lightmap Preview Window");
-        ShowTweakToggle(GITweak.BetterLDAInspector, "Better Lighting Data asset inspector");
-        ShowTweakToggle(GITweak.LightmapFlagsDropdown, "Show \"Lightmap Flags\" dropdown in material inspector");
-        ShowTweakToggle(GITweak.AutomaticEmbeddedLightingSettings, "Use embedded Lighting Settings asset for new scenes");
-        ShowTweakToggle(GITweak.BetterLightingSettingsDefaults, "Default to GPU lightmapper and no view prioritization");
-        ShowTweakToggle(GITweak.NewSkyboxButton, "Show New and Clone buttons for skybox materials");
-
-        EditorGUI.BeginChangeCheck();
-        ShowTweakToggle(GITweak.BakedTransmissionViewModes, "Scene view modes for Baked Transmission");
-        if (EditorGUI.EndChangeCheck())
+        tweakTogglesHeader = EditorGUILayout.BeginFoldoutHeaderGroup(tweakTogglesHeader, "Tweak toggles");
+        if (tweakTogglesHeader)
         {
-            if (IsEnabled(GITweak.BakedTransmissionViewModes))
-                GITweaksViewModes.Init();
-            else
-                GITweaksViewModes.Deinit();
+            ShowTweakToggle(GITweak.ClickableLightmapCharts, "Clickable charts in Lightmap Preview Window");
+            ShowTweakToggle(GITweak.BetterLDAInspector, "Better Lighting Data asset inspector");
+            ShowTweakToggle(GITweak.LightmapFlagsDropdown, "Show \"Lightmap Flags\" dropdown in material inspector");
+            ShowTweakToggle(GITweak.AutomaticEmbeddedLightingSettings, "Use embedded Lighting Settings asset for new scenes");
+            ShowTweakToggle(GITweak.BetterLightingSettingsDefaults, "Default to GPU lightmapper and no view prioritization");
+            ShowTweakToggle(GITweak.NewSkyboxButton, "Show New and Clone buttons for skybox materials");
+
+            EditorGUI.BeginChangeCheck();
+            ShowTweakToggle(GITweak.BakedTransmissionViewModes, "Scene view modes for Baked Transmission");
+            if (EditorGUI.EndChangeCheck())
+            {
+                if (IsEnabled(GITweak.BakedTransmissionViewModes))
+                    GITweaksViewModes.Init();
+                else
+                    GITweaksViewModes.Deinit();
+            }
         }
     }
 
