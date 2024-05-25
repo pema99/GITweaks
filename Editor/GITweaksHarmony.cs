@@ -69,6 +69,45 @@ internal static class GITweaksHarmony
     }
 
     [HarmonyPatch]
+    private class CloneSkyboxMaterialPatch
+    {
+        [HarmonyTargetMethod]
+        static MethodBase TargetMethod() => AccessTools.Method(System.Type.GetType("UnityEditor.LightingEditor, UnityEditor"), "DrawGUI");
+
+        [HarmonyPostfix]
+        static void Prefix()
+        {
+            try
+            {
+                EditorGUILayout.BeginHorizontal();
+
+                if (GUILayout.Button("New skybox material"))
+                {
+                    Material mat = new Material(Shader.Find("Skybox/Procedural"));
+                    mat.name = "New Skybox Material";
+                    RenderSettings.skybox = mat;
+                    ProjectWindowUtil.CreateAsset(mat, (mat.name + ".mat"));
+                }
+
+                using (new EditorGUI.DisabledScope(RenderSettings.skybox == null))
+                if (GUILayout.Button("Clone skybox material"))
+                {
+                    Material mat = new Material(RenderSettings.skybox);
+                    mat.name = string.IsNullOrEmpty(RenderSettings.skybox.name) ? "New Lighting Settings" : RenderSettings.skybox.name;
+                    RenderSettings.skybox = mat;
+                    ProjectWindowUtil.CreateAsset(mat, (mat.name + ".mat"));
+                }
+
+                EditorGUILayout.EndHorizontal();
+            }
+            catch
+            {
+                // Fail silently, don't want to bother the user
+            }
+        }
+    }
+
+    [HarmonyPatch]
     private class ClickableUVChartPatch
     {
         [HarmonyTargetMethod]
