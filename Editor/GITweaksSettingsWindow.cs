@@ -47,7 +47,7 @@ public class GITweaksSettingsWindow : EditorWindow
     {
         GITweaksSettingsWindow wnd = GetWindow<GITweaksSettingsWindow>();
         wnd.minSize = new Vector2(350, 150);
-        wnd.titleContent = new GUIContent("GI Tweaks Dashboard");
+        wnd.titleContent = new GUIContent("GI Tweaks Settings");
     }
 
     [MenuItem("Tools/GI Tweaks/Bake Lighting")]
