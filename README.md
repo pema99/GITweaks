@@ -26,6 +26,7 @@ Making bulk lighting-related changes to renderers in a large scene is tedious. T
 
 ### Baked Transmission view modes
 The rules for what is considered transmissive/transparent by the builtin lightmapper are somewhat opaque. These added scene view modes allow for easy identification and debugging of transparents. There are 2 modes, both accessible from the scene view toolbar:
+
 ![image](https://github.com/pema99/GITweaks/assets/11212115/ddd63e87-da58-4183-a756-ef1b47aab180)
 
 "Baked Transmission Modes" displays what the baker sees as transmissive:
