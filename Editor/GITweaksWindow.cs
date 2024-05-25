@@ -21,9 +21,7 @@ public class GITweaksWindow : EditorWindow
     - Reassign Shadowmask indices without rebake (component)
     - Change lightmapped renderer to probe lit without needing rebake
     - Probe placement projection guide
-    - Auto assign sun source env
     - Create default skybox button
-    - Dont disable receive gi in inspector (so you can multi edit)
     - Atlassing post bake optim
     - 2 mode shadowmask override
     X Click to highlight object in lightmap preview window

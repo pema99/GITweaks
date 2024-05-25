@@ -1,10 +1,12 @@
 using HarmonyLib;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 
 [InitializeOnLoad]
@@ -204,6 +206,7 @@ internal static class GITweaksHarmony
     // TODO: Move this
     static void NewSceneCreated(Scene scene, NewSceneSetup setup, NewSceneMode mode)
     {
+        // Tweak: Embedded lighting settings
         LightingSettings settings = new LightingSettings() { name = "Lighting Settings (Embedded)" };
         Lightmapping.SetLightingSettingsForScene(scene, settings);
     }
