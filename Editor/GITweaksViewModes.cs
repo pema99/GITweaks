@@ -54,6 +54,14 @@ public static class GITweaksViewModes
 
     static GITweaksViewModes()
     {
+        Init();
+    }
+
+    public static void Init()
+    {
+        if (!GITweaksSettingsWindow.IsEnabled(GITweak.BakedTransmissionViewModes))
+            return;
+
         var modes = (List<SceneView.CameraMode>)typeof(SceneView)
             .GetProperty("userDefinedModes", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
             .GetValue(null, new object[0]);
@@ -69,6 +77,16 @@ public static class GITweaksViewModes
 
         SceneView.beforeSceneGui -= RenderCustom;
         SceneView.beforeSceneGui += RenderCustom;
+    }
+
+    public static void Deinit()
+    {
+        foreach (SceneView sv in SceneView.sceneViews)
+        {
+            sv.cameraMode = SceneView.GetBuiltinCameraMode(DrawCameraMode.Textured);
+        }
+
+        SceneView.ClearUserDefinedCameraModes();
     }
 
     enum TransparencyMode

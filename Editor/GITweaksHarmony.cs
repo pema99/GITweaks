@@ -19,6 +19,9 @@ internal static class GITweaksHarmony
     {
         static void Postfix(MaterialEditor __instance)
         {
+            if (!GITweaksSettingsWindow.IsEnabled(GITweak.LightmapFlagsDropdown))
+                return;
+
             try
             {
                 Rect r = (Rect)AccessTools.Method(typeof(MaterialEditor), "GetControlRectForSingleLine").Invoke(__instance, new object[0]);
@@ -58,6 +61,9 @@ internal static class GITweaksHarmony
         {
             try
             {
+                if (!GITweaksSettingsWindow.IsEnabled(GITweak.BetterLightingSettingsDefaults))
+                    return;
+
                 __instance.lightmapper = LightingSettings.Lightmapper.ProgressiveGPU;
                 __instance.prioritizeView = false;
             }
@@ -77,6 +83,9 @@ internal static class GITweaksHarmony
         [HarmonyPostfix]
         static void Prefix()
         {
+            if (!GITweaksSettingsWindow.IsEnabled(GITweak.NewSkyboxButton))
+                return;
+
             try
             {
                 EditorGUILayout.BeginHorizontal();
@@ -139,6 +148,9 @@ internal static class GITweaksHarmony
         [HarmonyPostfix]
         static void Postfix(object __instance, Rect r) 
         {
+            if (!GITweaksSettingsWindow.IsEnabled(GITweak.ClickableLightmapCharts))
+                return;
+
             try
             {
                 System.Type thisType = __instance.GetType();
@@ -195,7 +207,10 @@ internal static class GITweaksHarmony
                             // Scale to uv bounds
                             if (mr != null)
                             {
-                                var verts = mr.GetComponent<MeshFilter>().sharedMesh.uv2;
+                                var mesh = mr.GetComponent<MeshFilter>().sharedMesh;
+                                var verts = mesh.uv2;
+                                if (verts == null || verts.Length == 0)
+                                    verts = mesh.uv;
                                 Vector2 minVert = Vector3.positiveInfinity, maxVert = Vector3.negativeInfinity;
                                 foreach (Vector3 vert in verts)
                                 {
@@ -246,8 +261,11 @@ internal static class GITweaksHarmony
     static void NewSceneCreated(Scene scene, NewSceneSetup setup, NewSceneMode mode)
     {
         // Tweak: Embedded lighting settings
-        LightingSettings settings = new LightingSettings() { name = "Lighting Settings (Embedded)" };
-        Lightmapping.SetLightingSettingsForScene(scene, settings);
+        if (GITweaksSettingsWindow.IsEnabled(GITweak.AutomaticEmbeddedLightingSettings))
+        {
+            LightingSettings settings = new LightingSettings() { name = "Lighting Settings (Embedded)" };
+            Lightmapping.SetLightingSettingsForScene(scene, settings);
+        }
     }
 
     static GITweaksHarmony()

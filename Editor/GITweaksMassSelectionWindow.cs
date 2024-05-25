@@ -9,33 +9,13 @@ using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 
-public class GITweaksWindow : EditorWindow
+public class GITweaksMassSelectionWindow : EditorWindow
 {
-    /* TODO:
-    - Toggles for each tweak
-    - Lighting settings template override
-    - Easily switch between lighting settings
-    - Seam stitching across meshes
-    - Shadow only debug view
-    - Change lightmapped renderer to probe lit without needing rebake
-    - Probe placement projection guide
-    - Atlassing post bake optim
-    X Create default skybox button
-    X Transparency view mode
-    X Click to highlight object in lightmap preview window
-    X Show lightmap flags in inspector for material
-    X View all renderers by receive GI mode
-    X Auto GPU lightmapper selection + no prioritize view
-    X Auto embedded lighting settings
-    X Move LODs to overlap on lightmap
-    X Better LDA inspector
-    */
-
-    [MenuItem("Tools/GI Tweaks/Dashboard")]
+    [MenuItem("Tools/GI Tweaks/Bulk Renderer Selection")]
     public static void ShowExample()
     {
-        GITweaksWindow wnd = GetWindow<GITweaksWindow>();
-        wnd.titleContent = new GUIContent("GI Tweaks Dashboard");
+        GITweaksMassSelectionWindow wnd = GetWindow<GITweaksMassSelectionWindow>();
+        wnd.titleContent = new GUIContent("Bulk Renderer Selection");
     }
 
     bool headerMassRenderSelection = true;
@@ -53,8 +33,6 @@ public class GITweaksWindow : EditorWindow
 
     public void OnGUI()
     {
-        headerMassRenderSelection = EditorGUILayout.BeginFoldoutHeaderGroup(headerMassRenderSelection, "Mass renderer selection");
-        if (headerMassRenderSelection)
         {
             filterActiveObjects = GUILayout.Toggle(filterActiveObjects, "Select only active objects");
             filterGIContributors = GUILayout.Toggle(filterGIContributors, "Select only GI contributors");
@@ -109,24 +87,6 @@ public class GITweaksWindow : EditorWindow
 
                 Selection.objects = source.Select(x => x.gameObject).ToArray();
             }
-        }
-        EditorGUILayout.EndFoldoutHeaderGroup();
-
-        if (GUILayout.Button("Open Lighting Window"))
-        {
-            System.Type.GetType("UnityEditor.LightingWindow, UnityEditor")
-                .GetMethod("CreateLightingWindow", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)
-                .Invoke(null, new object[0]);
-        }
-        if (GUILayout.Button("Bake lighting"))
-        {
-            Lightmapping.BakeAsync();
-        }
-        if (GUILayout.Button("Bake Reflection Probes only"))
-        {
-            typeof(Lightmapping)
-                .GetMethod("BakeAllReflectionProbesSnapshots", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)
-                .Invoke(null, new object[0]);
         }
     }
 }
