@@ -18,6 +18,7 @@ public enum GITweak
     AutomaticEmbeddedLightingSettings,
     BetterLightingSettingsDefaults,
     NewSkyboxButton,
+    LightmappedToProbeLit,
 }
 
 public class GITweaksSettingsWindow : EditorWindow
@@ -26,11 +27,11 @@ public class GITweaksSettingsWindow : EditorWindow
     X Toggles for each tweak
     - Lighting settings template override
     - Easily switch between lighting settings
-    - Seam stitching across meshes
-    - Shadow only debug view
-    - Change lightmapped renderer to probe lit without needing rebake
     - Probe placement projection guide
+    - Seam stitching across meshes
     - Atlassing post bake optim
+    - Shadow only debug view
+    X Change lightmapped renderer to probe lit without needing rebake
     X Create default skybox button
     X Transparency view mode
     X Click to highlight object in lightmap preview window
@@ -46,7 +47,7 @@ public class GITweaksSettingsWindow : EditorWindow
     public static void ShowExample()
     {
         GITweaksSettingsWindow wnd = GetWindow<GITweaksSettingsWindow>();
-        wnd.minSize = new Vector2(350, 150);
+        wnd.minSize = new Vector2(350, 170);
         wnd.titleContent = new GUIContent("GI Tweaks Settings");
     }
 
@@ -89,6 +90,7 @@ public class GITweaksSettingsWindow : EditorWindow
             ShowTweakToggle(GITweak.AutomaticEmbeddedLightingSettings, "Use embedded Lighting Settings asset for new scenes");
             ShowTweakToggle(GITweak.BetterLightingSettingsDefaults, "Default to GPU lightmapper and no view prioritization");
             ShowTweakToggle(GITweak.NewSkyboxButton, "Show New and Clone buttons for skybox materials");
+            ShowTweakToggle(GITweak.LightmappedToProbeLit, "Allow converting lightmapped renderers to probe-lit");
 
             EditorGUI.BeginChangeCheck();
             ShowTweakToggle(GITweak.BakedTransmissionViewModes, "Scene view modes for Baked Transmission");

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -247,6 +248,67 @@ internal static class GITweaksHarmony
                     {
                         Selection.activeGameObject = bestChart;
                         EditorGUIUtility.PingObject(bestChart);
+                    }
+                }
+            }
+            catch
+            {
+                // Fail silently, don't want to bother the user
+            }
+        }
+    }
+
+    [HarmonyPatch]
+    private class ConvertToProbeLitPatch
+    {
+        static System.Type MainType = System.Type.GetType("UnityEditor.RendererLightingSettings, UnityEditor");
+
+        [HarmonyTargetMethod]
+        static MethodBase TargetMethod() => AccessTools.Method(MainType, "RenderSettings");
+
+        static MethodInfo InjectedMethodInfo = SymbolExtensions.GetMethodInfo((object self) => InjectedMethod(self));
+
+        [HarmonyTranspiler]
+        static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+        {
+            bool first = true;
+            foreach (var instruction in instructions)
+            {
+                yield return instruction;
+
+                if (instruction.operand is MethodInfo info && info.Name == "IntPopup")
+                {
+                    if (first)
+                    {
+                        yield return new CodeInstruction(OpCodes.Ldarg_0);
+                        yield return new CodeInstruction(OpCodes.Call, InjectedMethodInfo);
+
+                        first = false;
+                    }
+                }
+            }
+        } 
+
+        static void InjectedMethod(object self)
+        {
+            if (!GITweaksSettingsWindow.IsEnabled(GITweak.LightmappedToProbeLit))
+                return;
+
+            try
+            {
+                SerializedObject obj = (SerializedObject)AccessTools.Field(MainType, "m_SerializedObject").GetValue(self);
+                if (obj.targetObject is MeshRenderer mr)
+                {
+                    if (mr.receiveGI == ReceiveGI.LightProbes && mr.lightmapIndex < 65534 && Lightmapping.lightingDataAsset != null)
+                    {
+                        var rect = EditorGUILayout.GetControlRect();
+                        rect.x += 14;
+                        rect.width -= 14;
+                        if (GUI.Button(rect, "Convert lightmapped to probe-lit"))
+                        {
+                            GITweaksLightingDataAssetEditor.MakeRendererProbeLit(Lightmapping.lightingDataAsset, mr);
+                            GITweaksLightingDataAssetEditor.RefreshLDA();
+                        }
                     }
                 }
             }

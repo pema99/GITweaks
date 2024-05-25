@@ -142,6 +142,38 @@ public static class GITweaksLightingDataAssetEditor
         o.ApplyModifiedProperties();
     }
 
+    public static void MakeRendererProbeLit(LightingDataAsset lda, MeshRenderer mr)
+    {
+        using SerializedObject o = new SerializedObject(lda);
+        inspectorModeObject.SetValue(o, InspectorMode.DebugInternal);
+
+        var mainSOI = ObjectToSOI(mr);
+
+        // Find mr
+        int mrIndex = -1;
+        using var lmIds = o.FindProperty("m_LightmappedRendererDataIDs");
+        for (int i = 0; i < lmIds.arraySize; i++)
+        {
+            using var elem = lmIds.GetArrayElementAtIndex(i);
+            elem.Next(true);
+            long main = elem.longValue;
+            elem.Next(false);
+            long prefab = elem.longValue;
+
+            if (mainSOI == new SerializedObjectID(main, prefab))
+            {
+                mrIndex = i;
+                break;
+            }
+        }
+
+        var lmVals = o.FindProperty("m_LightmappedRendererData");
+        var atlasData = lmVals.GetArrayElementAtIndex(mrIndex);
+        atlasData.FindPropertyRelative("lightmapIndex").intValue = 65534;
+
+        o.ApplyModifiedProperties();
+    }
+
     public static void RefreshLDA()
     {
         Lightmapping.lightingDataAsset = Lightmapping.lightingDataAsset;
