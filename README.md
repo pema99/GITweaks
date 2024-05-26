@@ -23,7 +23,7 @@ For reference, the same scene baked with the script disabled, and using lightmap
 ![image](https://github.com/pema99/GITweaks/assets/11212115/edcfd2e8-f18c-4166-a3c3-97089e749774)
 
 ### Clickable Lightmap Preview charts
-The Lightmap Preview window can highlight the UV chart of the currently selectec object. However, you cannot inversely click on a chart to select the corresponding object. This tweak adds that functionality.
+The Lightmap Preview window can highlight the UV chart of the currently selected object. However, you cannot inversely click on a chart to select the corresponding object. This tweak adds that functionality.
 
 ![ZFvbglRVTT](https://github.com/pema99/GITweaks/assets/11212115/ec36ed87-5bdf-489d-b94d-cbe8c5595bd4)
 
