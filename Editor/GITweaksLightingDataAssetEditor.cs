@@ -7,28 +7,6 @@ using UnityEngine;
 [InitializeOnLoad]
 public static class GITweaksLightingDataAssetEditor
 {
-    static GITweaksLightingDataAssetEditor()
-    {
-        Lightmapping.bakeCompleted -= BakeFinished;
-        Lightmapping.bakeCompleted += BakeFinished;
-    }
-
-    private static void BakeFinished()
-    {
-        var sharedLODs = Object.FindObjectsByType<GITweaksSharedLOD>(FindObjectsSortMode.None);
-        foreach (var sharedLOD in sharedLODs)
-        {
-            var lods = sharedLOD.GetComponent<LODGroup>().GetLODs();
-            if (lods.Length == 0) continue;
-            var lod0 = lods[0].renderers.FirstOrDefault(x => x is MeshRenderer) as MeshRenderer;
-            if (lod0 == null) continue;
-
-            var mrs = sharedLOD.RenderersToLightmap;
-            CopyAtlasSettingsToRenderers(Lightmapping.lightingDataAsset, lod0, mrs);
-            RefreshLDA();
-        }
-    }
-
     private static System.Reflection.PropertyInfo inspectorModeObject =
         typeof(SerializedObject).GetProperty("inspectorMode", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
 

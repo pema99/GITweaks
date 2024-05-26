@@ -11,7 +11,10 @@
     "allowUnsafeCode": false,
     "overrideReferences": true,
     "precompiledReferences": [
-        "0Harmony_GITweaks.dll"
+        "0Harmony_GITweaks.dll",
+        "Accord.Math.dll",
+        "Accord.Math.Core.dll",
+        "Accord.dll"
     ],
     "autoReferenced": true,
     "defineConstraints": [],
