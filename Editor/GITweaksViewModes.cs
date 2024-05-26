@@ -182,6 +182,8 @@ public static class GITweaksViewModes
         return TransparencyMode.Opaque;
     }
 
+    private static Material viewMat = null;
+
     private static void RenderCustom(SceneView sceneView)
     {
         if (sceneView.cameraMode.name != BakedTransmissionModes && sceneView.cameraMode.name != BakedTransmissionTextures)
@@ -194,7 +196,8 @@ public static class GITweaksViewModes
 
         sceneView.SetSceneViewShaderReplace(null, "");
 
-        var mat = new Material(Shader.Find("Hidden/pema99/Overlay"));
+        if (viewMat == null)
+            viewMat = new Material(Shader.Find("Hidden/pema99/Overlay"));
 
         var planes = GeometryUtility.CalculateFrustumPlanes(sceneView.camera);
         var mrs = Object.FindObjectsByType<MeshRenderer>(FindObjectsSortMode.None);
@@ -206,16 +209,16 @@ public static class GITweaksViewModes
             var mode = GetTransparencyMode(mr.sharedMaterial, out var tex, out var alpha);
             switch (mode)
             {
-                case TransparencyMode.RGB: mat.color = Color.red; break;
-                case TransparencyMode.Alpha: mat.color = Color.green; break;
-                case TransparencyMode.Cutout: mat.color = Color.blue; break;
-                case TransparencyMode.MissingMainTex: mat.color = Color.magenta; break;
-                case TransparencyMode.Opaque: mat.color = Color.white; break;
+                case TransparencyMode.RGB: viewMat.color = Color.red; break;
+                case TransparencyMode.Alpha: viewMat.color = Color.green; break;
+                case TransparencyMode.Cutout: viewMat.color = Color.blue; break;
+                case TransparencyMode.MissingMainTex: viewMat.color = Color.magenta; break;
+                case TransparencyMode.Opaque: viewMat.color = Color.white; break;
             }
-            mat.mainTexture = tex;
-            mat.SetFloat("_Alpha", alpha);
-            mat.SetInt("_Mode", showTextures ? (mode == TransparencyMode.RGB ? 2 : 1) : 0);
-            mat.SetPass(0);
+            viewMat.mainTexture = tex;
+            viewMat.SetFloat("_Alpha", alpha);
+            viewMat.SetInt("_Mode", showTextures ? (mode == TransparencyMode.RGB ? 2 : 1) : 0);
+            viewMat.SetPass(0);
 
             Graphics.DrawMeshNow(mr.GetComponent<MeshFilter>().sharedMesh, mr.localToWorldMatrix);
         }
