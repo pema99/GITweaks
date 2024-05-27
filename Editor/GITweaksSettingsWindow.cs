@@ -9,104 +9,108 @@ using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 
-public enum GITweak
+namespace GITweaks
 {
-    ClickableLightmapCharts,
-    BakedTransmissionViewModes,
-    BetterLDAInspector,
-    LightmapFlagsDropdown,
-    AutomaticEmbeddedLightingSettings,
-    BetterLightingSettingsDefaults,
-    NewSkyboxButton,
-    LightmappedToProbeLit,
-}
-
-public class GITweaksSettingsWindow : EditorWindow
-{
-    /* TODO:
-    X Toggles for each tweak
-    - Lighting settings template override
-    - Easily switch between lighting settings
-    - Probe placement projection guide
-    - Seam stitching across meshes
-    - Atlassing post bake optim
-    - Shadow only debug view
-    X Change lightmapped renderer to probe lit without needing rebake
-    X Create default skybox button
-    X Transparency view mode
-    X Click to highlight object in lightmap preview window
-    X Show lightmap flags in inspector for material
-    X View all renderers by receive GI mode
-    X Auto GPU lightmapper selection + no prioritize view
-    X Auto embedded lighting settings
-    X Move LODs to overlap on lightmap
-    X Better LDA inspector
-    */
-
-    [MenuItem("Tools/GI Tweaks/Settings")]
-    public static void ShowExample()
+    public enum GITweak
     {
-        GITweaksSettingsWindow wnd = GetWindow<GITweaksSettingsWindow>();
-        wnd.minSize = new Vector2(350, 170);
-        wnd.titleContent = new GUIContent("GI Tweaks Settings");
+        ClickableLightmapCharts,
+        BakedTransmissionViewModes,
+        BetterLDAInspector,
+        LightmapFlagsDropdown,
+        AutomaticEmbeddedLightingSettings,
+        BetterLightingSettingsDefaults,
+        NewSkyboxButton,
+        LightmappedToProbeLit,
     }
 
-    [MenuItem("Tools/GI Tweaks/Bake Lighting")]
-    public static void BakeLighting()
+    public class GITweaksSettingsWindow : EditorWindow
     {
-        Lightmapping.BakeAsync();
-    }
+        /* TODO:
+        X Toggles for each tweak
+        - Lighting settings template override
+        - Easily switch between lighting settings
+        - Probe placement projection guide
+        - Seam stitching across meshes
+        - Atlassing post bake optim
+        - Shadow only debug view
+        - Post-denoising (no need to bake)
+        X Change lightmapped renderer to probe lit without needing rebake
+        X Create default skybox button
+        X Transparency view mode
+        X Click to highlight object in lightmap preview window
+        X Show lightmap flags in inspector for material
+        X View all renderers by receive GI mode
+        X Auto GPU lightmapper selection + no prioritize view
+        X Auto embedded lighting settings
+        X Move LODs to overlap on lightmap
+        X Better LDA inspector
+        */
 
-    [MenuItem("Tools/GI Tweaks/Bake Reflection Probes")]
-    public static void BakeReflectionProbes()
-    {
-        typeof(Lightmapping)
-            .GetMethod("BakeAllReflectionProbesSnapshots", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)
-            .Invoke(null, new object[0]);
-    }
-
-    bool tweakTogglesHeader = true;
-
-    private void ShowTweakToggle(GITweak tweak, string label)
-    {
-        string key = $"GITweaks.{Enum.GetName(typeof(GITweak), tweak)}";
-        bool val = EditorPrefs.GetBool(key, true);
-        EditorGUI.BeginChangeCheck();
-        val = GUILayout.Toggle(val, label);
-        if (EditorGUI.EndChangeCheck())
+        [MenuItem("Tools/GI Tweaks/Settings")]
+        public static void ShowExample()
         {
-            EditorPrefs.SetBool(key, val);
+            GITweaksSettingsWindow wnd = GetWindow<GITweaksSettingsWindow>();
+            wnd.minSize = new Vector2(350, 170);
+            wnd.titleContent = new GUIContent("GI Tweaks Settings");
         }
-    }
 
-    public void OnGUI()
-    {
-        tweakTogglesHeader = EditorGUILayout.BeginFoldoutHeaderGroup(tweakTogglesHeader, "Tweak toggles");
-        if (tweakTogglesHeader)
+        [MenuItem("Tools/GI Tweaks/Bake Lighting")]
+        public static void BakeLighting()
         {
-            ShowTweakToggle(GITweak.ClickableLightmapCharts, "Clickable charts in Lightmap Preview Window");
-            ShowTweakToggle(GITweak.BetterLDAInspector, "Better Lighting Data asset inspector");
-            ShowTweakToggle(GITweak.LightmapFlagsDropdown, "Show \"Lightmap Flags\" dropdown in material inspector");
-            ShowTweakToggle(GITweak.AutomaticEmbeddedLightingSettings, "Use embedded Lighting Settings asset for new scenes");
-            ShowTweakToggle(GITweak.BetterLightingSettingsDefaults, "Default to GPU lightmapper and no view prioritization");
-            ShowTweakToggle(GITweak.NewSkyboxButton, "Show New and Clone buttons for skybox materials");
-            ShowTweakToggle(GITweak.LightmappedToProbeLit, "Allow converting lightmapped renderers to probe-lit");
+            Lightmapping.BakeAsync();
+        }
 
+        [MenuItem("Tools/GI Tweaks/Bake Reflection Probes")]
+        public static void BakeReflectionProbes()
+        {
+            typeof(Lightmapping)
+                .GetMethod("BakeAllReflectionProbesSnapshots", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)
+                .Invoke(null, new object[0]);
+        }
+
+        bool tweakTogglesHeader = true;
+
+        private void ShowTweakToggle(GITweak tweak, string label)
+        {
+            string key = $"GITweaks.{Enum.GetName(typeof(GITweak), tweak)}";
+            bool val = EditorPrefs.GetBool(key, true);
             EditorGUI.BeginChangeCheck();
-            ShowTweakToggle(GITweak.BakedTransmissionViewModes, "Scene view modes for Baked Transmission");
+            val = GUILayout.Toggle(val, label);
             if (EditorGUI.EndChangeCheck())
             {
-                if (IsEnabled(GITweak.BakedTransmissionViewModes))
-                    GITweaksViewModes.Init();
-                else
-                    GITweaksViewModes.Deinit();
+                EditorPrefs.SetBool(key, val);
             }
         }
-    }
 
-    public static bool IsEnabled(GITweak tweak)
-    {
-        string key = $"GITweaks.{Enum.GetName(typeof(GITweak), tweak)}";
-        return EditorPrefs.GetBool(key, true);
+        public void OnGUI()
+        {
+            tweakTogglesHeader = EditorGUILayout.BeginFoldoutHeaderGroup(tweakTogglesHeader, "Tweak toggles");
+            if (tweakTogglesHeader)
+            {
+                ShowTweakToggle(GITweak.ClickableLightmapCharts, "Clickable charts in Lightmap Preview Window");
+                ShowTweakToggle(GITweak.BetterLDAInspector, "Better Lighting Data asset inspector");
+                ShowTweakToggle(GITweak.LightmapFlagsDropdown, "Show \"Lightmap Flags\" dropdown in material inspector");
+                ShowTweakToggle(GITweak.AutomaticEmbeddedLightingSettings, "Use embedded Lighting Settings asset for new scenes");
+                ShowTweakToggle(GITweak.BetterLightingSettingsDefaults, "Default to GPU lightmapper and no view prioritization");
+                ShowTweakToggle(GITweak.NewSkyboxButton, "Show New and Clone buttons for skybox materials");
+                ShowTweakToggle(GITweak.LightmappedToProbeLit, "Allow converting lightmapped renderers to probe-lit");
+
+                EditorGUI.BeginChangeCheck();
+                ShowTweakToggle(GITweak.BakedTransmissionViewModes, "Scene view modes for Baked Transmission");
+                if (EditorGUI.EndChangeCheck())
+                {
+                    if (IsEnabled(GITweak.BakedTransmissionViewModes))
+                        GITweaksViewModes.Init();
+                    else
+                        GITweaksViewModes.Deinit();
+                }
+            }
+        }
+
+        public static bool IsEnabled(GITweak tweak)
+        {
+            string key = $"GITweaks.{Enum.GetName(typeof(GITweak), tweak)}";
+            return EditorPrefs.GetBool(key, true);
+        }
     }
 }

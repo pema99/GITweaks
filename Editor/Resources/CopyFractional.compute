@@ -1,0 +1,50 @@
+#pragma kernel CopyFractional
+
+SamplerState sampler_Input;
+Texture2D<float4> _Input;
+
+RWTexture2D<float4> _Output;
+
+float4 _SrcRect;
+int _DstX;
+int _DstY;
+
+bool _GammaToLinear;
+
+inline float GammaToLinearSpaceExact(float value)
+{
+    if (value <= 0.04045F)
+        return value / 12.92F;
+    else if (value < 1.0F)
+        return pow((value + 0.055F) / 1.055F, 2.4F);
+    else
+        return pow(value, 2.2F);
+}
+
+[numthreads(8,8,1)]
+void CopyFractional(uint3 id : SV_DispatchThreadID)
+{
+    int copyWidth = ceil(_SrcRect.x);
+    int copyHeight = ceil(_SrcRect.y);
+    
+    if (id.x >= copyWidth || id.y >= copyHeight)
+        return;
+    
+    // Read input texel at fractional location
+    int inputWidth, inputHeight;
+    _Input.GetDimensions(inputWidth, inputHeight);
+    float2 samplePos = (_SrcRect.zw + id.xy + 0.5) / float2(inputWidth, inputHeight);
+    float4 sample = _Input.SampleLevel(sampler_Input, samplePos, 0);
+    
+    // Gamma correct
+    if (_GammaToLinear)
+    {
+        sample.r = GammaToLinearSpaceExact(sample.r);
+        sample.g = GammaToLinearSpaceExact(sample.g);
+        sample.b = GammaToLinearSpaceExact(sample.b);
+        sample.a = GammaToLinearSpaceExact(sample.a);
+    }
+    
+    // Write to output and integer location (ie. center of pixel)
+    _Output[uint2(_DstX, _DstY) + id.xy] = sample;
+}
