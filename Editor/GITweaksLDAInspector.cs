@@ -3,24 +3,27 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-[CustomEditor(typeof(LightingDataAsset))]
-public class GITweaksLDAInspector : Editor
+namespace GITweaks
 {
-    System.Reflection.PropertyInfo inspectorModeSelf = typeof(Editor).GetProperty("inspectorMode", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-    System.Reflection.PropertyInfo inspectorModeObject = typeof(SerializedObject).GetProperty("inspectorMode", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-
-    public override void OnInspectorGUI()
+    [CustomEditor(typeof(LightingDataAsset))]
+    public class GITweaksLDAInspector : Editor
     {
-        if (GITweaksSettingsWindow.IsEnabled(GITweak.BetterLDAInspector))
+        System.Reflection.PropertyInfo inspectorModeSelf = typeof(Editor).GetProperty("inspectorMode", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        System.Reflection.PropertyInfo inspectorModeObject = typeof(SerializedObject).GetProperty("inspectorMode", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+        public override void OnInspectorGUI()
         {
-            inspectorModeSelf.SetValue(this, InspectorMode.DebugInternal);
-            inspectorModeObject.SetValue(serializedObject, InspectorMode.DebugInternal);
+            if (GITweaksSettingsWindow.IsEnabled(GITweak.BetterLDAInspector))
+            {
+                inspectorModeSelf.SetValue(this, InspectorMode.DebugInternal);
+                inspectorModeObject.SetValue(serializedObject, InspectorMode.DebugInternal);
+            }
+            else
+            {
+                inspectorModeSelf.SetValue(this, InspectorMode.Normal);
+                inspectorModeObject.SetValue(serializedObject, InspectorMode.Normal);
+            }
+            base.OnInspectorGUI();
         }
-        else
-        {
-            inspectorModeSelf.SetValue(this, InspectorMode.Normal);
-            inspectorModeObject.SetValue(serializedObject, InspectorMode.Normal);
-        }
-        base.OnInspectorGUI();
     }
 }
