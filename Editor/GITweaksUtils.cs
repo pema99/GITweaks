@@ -23,36 +23,64 @@ namespace GITweaks
             else return GetSTRect((Terrain)c);
         }
 
+        public static Rect ComputeUVBounds(MeshRenderer mr)
+        {
+            var mesh = mr.GetComponent<MeshFilter>().sharedMesh;
+            var verts = mesh.uv2;
+            if (verts == null || verts.Length == 0)
+                verts = mesh.uv;
+            Vector2 minVert = Vector3.positiveInfinity, maxVert = Vector3.negativeInfinity;
+            foreach (Vector3 vert in verts)
+            {
+                if (vert.x < minVert.x)
+                    minVert.x = vert.x;
+                if (vert.y < minVert.y)
+                    minVert.y = vert.y;
+                if (vert.x > maxVert.x)
+                    maxVert.x = vert.x;
+                if (vert.y > maxVert.y)
+                    maxVert.y = vert.y;
+            }
+            Rect uvBounds = new Rect(minVert, maxVert - minVert);
+            return uvBounds;
+        }
+
+        public static Rect ComputeUVBounds(Component c)
+        {
+            if (c is MeshRenderer mr)
+                return ComputeUVBounds(mr);
+            else
+                return new Rect(0, 0, 1, 1);
+        }
+
         public static Rect STRectToPixelRect(MeshRenderer mr, Rect stRect)
         {
-            // Scale to uv bounds
-            if (mr != null)
-            {
-                var mesh = mr.GetComponent<MeshFilter>().sharedMesh;
-                var verts = mesh.uv2;
-                if (verts == null || verts.Length == 0)
-                    verts = mesh.uv;
-                Vector2 minVert = Vector3.positiveInfinity, maxVert = Vector3.negativeInfinity;
-                foreach (Vector3 vert in verts)
-                {
-                    if (vert.x < minVert.x)
-                        minVert.x = vert.x;
-                    if (vert.y < minVert.y)
-                        minVert.y = vert.y;
-                    if (vert.x > maxVert.x)
-                        maxVert.x = vert.x;
-                    if (vert.y > maxVert.y)
-                        maxVert.y = vert.y;
-                }
-                Rect uvBounds = new Rect(minVert, maxVert - minVert);
-                // Scale ST rect to pixel rect
-                stRect.x += uvBounds.x * stRect.width;
-                stRect.y += uvBounds.y * stRect.height;
-                stRect.width *= uvBounds.width;
-                stRect.height *= uvBounds.height;
-            }
+            Rect uvBounds = ComputeUVBounds(mr);
+
+            // Scale ST rect to pixel rect
+            stRect.x += uvBounds.x * stRect.width;
+            stRect.y += uvBounds.y * stRect.height;
+            stRect.width *= uvBounds.width;
+            stRect.height *= uvBounds.height;
 
             return stRect;
+        }
+
+        public static Rect STRectToPixelRect(Rect uvBounds, Rect stRect)
+        {
+            // Scale ST rect to pixel rect
+            stRect.x += uvBounds.x * stRect.width;
+            stRect.y += uvBounds.y * stRect.height;
+            stRect.width *= uvBounds.width;
+            stRect.height *= uvBounds.height;
+
+            return stRect;
+        }
+
+        public static void OffsetLightmapSTByPixelRectOffset(Rect uvBounds, ref Vector4 lightmapST)
+        {
+            lightmapST.z -= uvBounds.x * lightmapST.x;
+            lightmapST.w -= uvBounds.y * lightmapST.y;
         }
 
         public static void OffsetLightmapSTByPixelRectOffset(MeshRenderer mr, ref Vector4 lightmapST)
@@ -143,7 +171,7 @@ namespace GITweaks
             RenderTexture temp = RenderTexture.GetTemporary(texture.width, texture.height, 0, format);
             Graphics.Blit(texture, temp);
 
-            Texture2D textureCopy = new Texture2D(texture.width, texture.height, format, TextureCreationFlags.None);
+            Texture2D textureCopy = new Texture2D(texture.width, texture.height, format, TextureCreationFlags.None) { name =  $"Copy of {texture.name}"};
             textureCopy.wrapMode = TextureWrapMode.Clamp;
             var prevRT = RenderTexture.active;
             RenderTexture.active = temp;
@@ -164,7 +192,7 @@ namespace GITweaks
 
         public static Texture2D RenderTextureToTexture2D(RenderTexture src)
         {
-            Texture2D result = new Texture2D(src.width, src.height, src.graphicsFormat, TextureCreationFlags.None);
+            Texture2D result = new Texture2D(src.width, src.height, src.graphicsFormat, TextureCreationFlags.None) { name = $"Conversion of {src.name}" };
             var prevRT = RenderTexture.active;
             RenderTexture.active = src;
             result.ReadPixels(new Rect(0, 0, src.width, src.height), 0, 0);

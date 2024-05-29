@@ -51,7 +51,8 @@ namespace GITweaks
             public List<HashSet<Component>> RenderersPerAtlas;
             public Dictionary<Component, Rect> PixelRectsFractional;
             public Dictionary<Component, RectInt> PixelRects;
-            public Dictionary<Component, Vector2Int> RendererScale; // TODO: This isn't needed
+            public Dictionary<Component, Vector2Int> RendererScale;
+            public Dictionary<Component, Rect> UVBounds;
 
             private AtlassingCache() { }
 
@@ -62,6 +63,7 @@ namespace GITweaks
                 PixelRectsFractional = new Dictionary<Component, Rect>();
                 PixelRects = new Dictionary<Component, RectInt>();
                 RendererScale = new Dictionary<Component, Vector2Int>();
+                UVBounds = new Dictionary<Component, Rect>();
 
                 RenderersPerAtlas = new List<HashSet<Component>>();
                 for (int i = 0; i < atlasSizes.Count; i++)
@@ -74,15 +76,14 @@ namespace GITweaks
                     var stRect = new Rect(st.z, st.w, st.x, st.y);
                     var pixelRect = stRect;
 
-                    if (c is MeshRenderer mr)
-                    {
-                        pixelRect = GITweaksUtils.STRectToPixelRect(mr, stRect);
-                    }
+                    var uvBounds = GITweaksUtils.ComputeUVBounds(c);
+                    pixelRect = GITweaksUtils.STRectToPixelRect(uvBounds, stRect);
 
                     var fractionalPixelRect = new Rect(atlasSizes[idx] * pixelRect.position, atlasSizes[idx] * pixelRect.size);
                     PixelRectsFractional[c] = fractionalPixelRect;
                     PixelRects[c] = fractionalPixelRect.ToRectInt();
                     RendererScale[c] = Vector2Int.one;
+                    UVBounds[c] = uvBounds;
                     RenderersPerAtlas[idx].Add(c);
                 }
             }
@@ -96,6 +97,7 @@ namespace GITweaks
                 copy.PixelRectsFractional = new Dictionary<Component, Rect>(PixelRectsFractional);
                 copy.PixelRects = new Dictionary<Component, RectInt>(PixelRects);
                 copy.RendererScale = new Dictionary<Component, Vector2Int>(RendererScale);
+                copy.UVBounds = new Dictionary<Component, Rect>(UVBounds);
                 return copy;
             }
         }
@@ -172,14 +174,20 @@ namespace GITweaks
 
         private static void RepackAtlasses()
         {
+            var lda = Lightmapping.lightingDataAsset;
+            var initialLightmaps = LightmapSettings.lightmaps;
+            if (initialLightmaps.Length == 0)
+                return;
+
+            bool hasDirectionality = initialLightmaps[0].lightmapDir != null;
+            bool hasShadowmask = initialLightmaps[0].shadowMask != null;
+
             // Settings
-            float minCoveragePercent = 0.8f;
+            float minCoveragePercent = 0.85f;
             int minLightmapSize = 64;
             bool allowNonSquareLightmaps = false;
             int padding = Mathf.Max(3, Lightmapping.lightingSettings.lightmapPadding);
 
-            var lda = Lightmapping.lightingDataAsset;
-            var initialLightmaps = LightmapSettings.lightmaps;
             var initialAtlassing = GITweaksLightingDataAssetEditor.GetAtlassing(lda);
 
             List<Vector2Int> atlasSizes = new List<Vector2Int>();
@@ -187,6 +195,8 @@ namespace GITweaks
                 atlasSizes.Add(new Vector2Int(initialLightmaps[i].lightmapColor.width, initialLightmaps[i].lightmapColor.height));
             var initialAtlassingCache = new AtlassingCache(initialAtlassing, atlasSizes);
             var atlassingCache = initialAtlassingCache.Copy();
+
+            bool didRepack = false;
 
             List<int> atlassesToRepack = new List<int>();
             for (int i = 0; i < atlassingCache.AtlasSizes.Count; i++)
@@ -249,20 +259,26 @@ namespace GITweaks
                         atlassingCache.RendererScale[renderer.key] *= 2;
                     }
 
+                    didRepack = true;
+
                     // We just replaced an atlas, now we want to re-visit the results of that
                     i--;
                 }
             }
+
+            // If we achieved did nothing, just bail
+            if (!didRepack)
+                return;
 
             // Create new lightmap textures to render into
             var newLightmapRTs = new (RenderTexture light, RenderTexture dir, RenderTexture shadow)[atlassingCache.AtlasSizes.Count];
             for (int i = 0; i < newLightmapRTs.Length; i++)
             {
                 var size = atlassingCache.AtlasSizes[i];
-                newLightmapRTs[i] = (
-                    new RenderTexture(new RenderTextureDescriptor(size.x, size.y) { graphicsFormat = GraphicsFormat.R16G16B16A16_SFloat, enableRandomWrite = true, }),
-                    new RenderTexture(new RenderTextureDescriptor(size.x, size.y) { graphicsFormat = GraphicsFormat.R8G8B8A8_UNorm, enableRandomWrite = true, }),
-                    new RenderTexture(new RenderTextureDescriptor(size.x, size.y) { graphicsFormat = GraphicsFormat.R8G8B8A8_UNorm, enableRandomWrite = true, }));
+                var light = new RenderTexture(new RenderTextureDescriptor(size.x, size.y) { graphicsFormat = GraphicsFormat.R16G16B16A16_SFloat, enableRandomWrite = true, });
+                var dir = hasDirectionality ? new RenderTexture(new RenderTextureDescriptor(size.x, size.y) { graphicsFormat = GraphicsFormat.R8G8B8A8_UNorm, enableRandomWrite = true, }) : null;
+                var shadow = hasShadowmask ? new RenderTexture(new RenderTextureDescriptor(size.x, size.y) { graphicsFormat = GraphicsFormat.R8G8B8A8_UNorm, enableRandomWrite = true, }) : null;
+                newLightmapRTs[i] = (light, dir, shadow);
             }
 
             // Copy renderers over, update their atlassing data
@@ -278,65 +294,87 @@ namespace GITweaks
                 Vector2 scale = atlassingCache.RendererScale[renderer];
                 newAtlasData.lightmapST = new Vector4(
                     newAtlasData.lightmapST.x * scale.x,
-                    newAtlasData.lightmapST.y * scale.y, // TODO: Bad
-                    (float)pixelRectScaled.position.x / lmSize.x, // TODO: Why is this off?
+                    newAtlasData.lightmapST.y * scale.y,
+                    (float)pixelRectScaled.position.x / lmSize.x,
                     (float)pixelRectScaled.position.y / lmSize.y);
                 newAtlasData.lightmapIndex = lightmapIndex;
-
-                if (renderer is MeshRenderer mr)
-                {
-                    // TODO: CACHE UV BOUNDS!!
-                    GITweaksUtils.OffsetLightmapSTByPixelRectOffset(mr, ref newAtlasData.lightmapST);
-                }
-
+                GITweaksUtils.OffsetLightmapSTByPixelRectOffset(atlassingCache.UVBounds[renderer], ref newAtlasData.lightmapST);
 
                 // Copy renderer
                 int oldLightmapIndex = oldAtlasData.lightmapIndex;
-                Texture2D oldLightmap = initialLightmaps[oldLightmapIndex].lightmapColor;
-                RenderTexture newLightmap = newLightmapRTs[lightmapIndex].light;
-                Texture2D oldDir = initialLightmaps[oldLightmapIndex].lightmapDir;
-                RenderTexture newDir = newLightmapRTs[lightmapIndex].dir;
-
-                bool gammaToLinear = PlayerSettings.colorSpace == ColorSpace.Gamma;
                 var oldRect = DilateRect(initialAtlassingCache.PixelRectsFractional[renderer]);
                 var newPosition = DilatePosition(atlassingCache.PixelRects[renderer].position);
-                GITweaksUtils.CopyFractional(oldLightmap, oldRect, newLightmap, newPosition, gammaToLinear); 
-                GITweaksUtils.CopyFractional(oldDir, oldRect, newDir, newPosition, gammaToLinear);
+
+                Texture2D oldLightmap = initialLightmaps[oldLightmapIndex].lightmapColor;
+                RenderTexture newLightmap = newLightmapRTs[lightmapIndex].light;
+                GITweaksUtils.CopyFractional(oldLightmap, oldRect, newLightmap, newPosition, PlayerSettings.colorSpace == ColorSpace.Gamma);
+
+                if (hasDirectionality)
+                {
+                    Texture2D oldDir = initialLightmaps[oldLightmapIndex].lightmapDir;
+                    RenderTexture newDir = newLightmapRTs[lightmapIndex].dir;
+                    GITweaksUtils.CopyFractional(oldDir, oldRect, newDir, newPosition, false);
+                }
+
+                if (hasShadowmask)
+                {
+                    Texture2D oldShadowmask = initialLightmaps[oldLightmapIndex].shadowMask;
+                    RenderTexture newShadowmask = newLightmapRTs[lightmapIndex].shadow;
+                    GITweaksUtils.CopyFractional(oldShadowmask, oldRect, newShadowmask, newPosition, false);
+                }
 
                 initialAtlassing[renderer] = newAtlasData;
             }
 
             // Convert to texture2D and import the new lightmaps
-            // TODO: Shadowmask
             var newLightmaps = new LightmapData[newLightmapRTs.Length];
             for (int i = 0; i < newLightmapRTs.Length; i++)
             {
                 newLightmaps[i] = new LightmapData();
 
                 var newPair = newLightmapRTs[i];
-                var newColor = GITweaksUtils.RenderTextureToTexture2D(newPair.light);
-                var newDir = GITweaksUtils.RenderTextureToTexture2D(newPair.dir);
 
                 string scenePath = Path.ChangeExtension(SceneManager.GetActiveScene().path, null);
 
+                var newColor = GITweaksUtils.RenderTextureToTexture2D(newPair.light);
+                newPair.light.Release();
+                Object.DestroyImmediate(newPair.light);
                 string lmPath = Path.Combine(scenePath, $"Lightmap-{i}_comp_light.exr");
                 File.WriteAllBytes(lmPath, newColor.EncodeToEXR());
+                Object.DestroyImmediate(newColor);
                 AssetDatabase.ImportAsset(lmPath, ImportAssetOptions.ForceSynchronousImport);
                 CopyImporterSettingsAndReimport(initialLightmaps[0].lightmapColor, lmPath);
                 newLightmaps[i].lightmapColor = AssetDatabase.LoadAssetAtPath<Texture2D>(lmPath);
 
-                string dirPath = Path.Combine(scenePath, $"Lightmap-{i}_comp_dir.png");
-                File.WriteAllBytes(dirPath, newDir.EncodeToPNG());
-                AssetDatabase.ImportAsset(dirPath, ImportAssetOptions.ForceSynchronousImport);
-                CopyImporterSettingsAndReimport(initialLightmaps[0].lightmapDir, dirPath);
-                newLightmaps[i].lightmapDir = AssetDatabase.LoadAssetAtPath<Texture2D>(dirPath);
+                if (hasDirectionality)
+                {
+                    var newDir = GITweaksUtils.RenderTextureToTexture2D(newPair.dir);
+                    newPair.dir.Release();
+                    Object.DestroyImmediate(newPair.dir);
+                    string dirPath = Path.Combine(scenePath, $"Lightmap-{i}_comp_dir.png");
+                    File.WriteAllBytes(dirPath, newDir.EncodeToPNG());
+                    Object.DestroyImmediate(newDir);
+                    AssetDatabase.ImportAsset(dirPath, ImportAssetOptions.ForceSynchronousImport);
+                    CopyImporterSettingsAndReimport(initialLightmaps[0].lightmapDir, dirPath);
+                    newLightmaps[i].lightmapDir = AssetDatabase.LoadAssetAtPath<Texture2D>(dirPath);
+                }
+
+                if (hasShadowmask)
+                {
+                    var newShadow = GITweaksUtils.RenderTextureToTexture2D(newPair.shadow);
+                    newPair.shadow.Release();
+                    Object.DestroyImmediate(newPair.shadow);
+                    string dirPath = Path.Combine(scenePath, $"Lightmap-{i}_comp_shadowmask.png");
+                    File.WriteAllBytes(dirPath, newShadow.EncodeToPNG());
+                    Object.DestroyImmediate(newShadow);
+                    AssetDatabase.ImportAsset(dirPath, ImportAssetOptions.ForceSynchronousImport);
+                    CopyImporterSettingsAndReimport(initialLightmaps[0].shadowMask, dirPath);
+                    newLightmaps[i].shadowMask = AssetDatabase.LoadAssetAtPath<Texture2D>(dirPath);
+                }
             }
 
             GITweaksLightingDataAssetEditor.UpdateAtlassing(lda, initialAtlassing);
             GITweaksLightingDataAssetEditor.UpdateLightmaps(lda, newLightmaps);
         }
-
-
-
     }
 }

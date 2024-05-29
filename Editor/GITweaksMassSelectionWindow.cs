@@ -31,7 +31,6 @@ namespace GITweaks
         ReflectionProbeUsage reflectionProbeUsageFilter = ReflectionProbeUsage.BlendProbes;
         bool filterOnlyCurrentScene = false;
         bool filterOnlyCurrentSelection = false;
-        // TODO: Presets
 
         public void OnGUI()
         {
