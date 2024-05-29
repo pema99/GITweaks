@@ -28,7 +28,7 @@ The Lightmap Preview window can highlight the UV chart of the currently selected
 ![ZFvbglRVTT](https://github.com/pema99/GITweaks/assets/11212115/ec36ed87-5bdf-489d-b94d-cbe8c5595bd4)
 
 ### Lightmap index dropdown in Lightmap Preview window
-This tweak adds a dropdown to the Lightmap Preview window that lets you switch between viewing different lightmaps.
+This tweak adds a dropdown to the Lightmap Preview window that lets you switch between viewing different lightmaps. A convenient shortcut for opening the window has been added under "Tools > GI Tweaks > Open Lightmap Preview".
 
 Before:
 
@@ -41,7 +41,7 @@ After:
 ### Optimize lightmap sizes after baking
 > Note: This feature does not work with the Bakery lightmapper.
 
-> Note: This tweak is _not_ enabled by default, and must be enabled in Tools > GI Tweaks > Settings.
+> Note: This tweak is _not_ enabled by default, and must be enabled in "Tools > GI Tweaks > Settings".
 
 Unity's builtin Lightmapper has a tendency to produce poorly packed lightmaps in some cases, which leads to wasting VRAM on empty texture space. An example is shown below.
 
