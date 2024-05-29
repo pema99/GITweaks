@@ -141,6 +141,9 @@ namespace GITweaks
                     var lightmapIndexField = AccessTools.Field(thisType, "m_LightmapIndex");
 
                     int lmCount = LightmapSettings.lightmaps.Length;
+                    if (lmCount == 0)
+                        return;
+
                     var lms = Enumerable.Range(0, lmCount);
                     EditorGUI.BeginChangeCheck();
                     int newLmIndex = EditorGUILayout.IntPopup((int)lightmapIndexField.GetValue(__instance), lms.Select(x => $"Lightmap {x}").ToArray(), lms.ToArray());
