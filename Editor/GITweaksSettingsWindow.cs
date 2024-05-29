@@ -54,7 +54,7 @@ namespace GITweaks
         public static void ShowExample()
         {
             GITweaksSettingsWindow wnd = GetWindow<GITweaksSettingsWindow>();
-            wnd.minSize = new Vector2(350, 170);
+            wnd.minSize = new Vector2(350, 300);
             wnd.titleContent = new GUIContent("GI Tweaks Settings");
         }
 
