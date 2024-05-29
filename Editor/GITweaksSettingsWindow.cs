@@ -31,9 +31,10 @@ namespace GITweaks
         - Easily switch between lighting settings
         - Probe placement projection guide
         - Seam stitching across meshes
-        - Atlassing post bake optim
         - Shadow only debug view
         - Post-denoising (no need to bake)
+        - Dropdown for lightmap index in preview window
+        - Atlassing post bake optim
         X Change lightmapped renderer to probe lit without needing rebake
         X Create default skybox button
         X Transparency view mode

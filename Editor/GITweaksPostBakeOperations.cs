@@ -224,6 +224,7 @@ namespace GITweaks
             {
                 // TODO: Just shrinking (think shadowmask)
                 // TODO: Halving
+                // TODO: Try splitting even more
 
                 float coverage = GetCoveragePercentage(atlassingCache, i);
                 if (coverage < minCoveragePercent)
