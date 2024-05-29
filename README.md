@@ -27,6 +27,25 @@ The Lightmap Preview window can highlight the UV chart of the currently selected
 
 ![ZFvbglRVTT](https://github.com/pema99/GITweaks/assets/11212115/ec36ed87-5bdf-489d-b94d-cbe8c5595bd4)
 
+### Optimize lightmap sizes after baking
+> Note: This feature does not work with the Bakery lightmapper.
+
+> Note: This tweak is _not_ enabled by default, and must be enabled in Tools > GI Tweaks > Settings.
+
+Unity's builtin Lightmapper has a tendency to produce poorly packed lightmaps in some cases, which leads to wasting VRAM on empty texture space. An example is shown below.
+
+![image](https://github.com/pema99/GITweaks/assets/11212115/dec8c317-2360-437a-b76d-e8bbbfae7f0a)
+
+When a bake is finished with this tweak enabled, the lightmap packing will be re-done, producing a new set of lightmaps, each of which is packed more tightly. These new lightmaps will often be smaller than the original lightmaps, and may be different sizes. Instances in each lightmap will never be resized, so there should be any noticeable quality difference. Below is the result of using the feature on the lightmap shown above. Before optimization, the scene had a single 512x512 lightmap. After optimization, the scene uses two 256x256 lightmaps - a 2x reduction in VRAM usage:
+
+![image](https://github.com/pema99/GITweaks/assets/11212115/157cb1c6-4fac-4d9c-9538-35bd19761ce6)
+
+The tweak is configurable via two additional settings:
+- **Target coverage %** is a threshold determining when lightmap size optimization will be enabled. If less than the specified percentage of lightmaps texels are covered, optimization will be done. This should usually be set pretty high.
+- **Minimum Lightmap Size** determines the minimum allowed lightmap size after optimization. If you want to avoid many small lightmaps, increase this value. If you set it too high, no optimization will be done.
+
+![image](https://github.com/pema99/GITweaks/assets/11212115/9e73b53d-d806-4340-a2ca-0d86fc2cfd66)
+
 ### Bulk select renderers
 Making bulk lighting-related changes to renderers in a large scene is tedious. This tool provides a simple way to mass-select renderers based on some configurable filters, for the purpose of multi-editing them. Accesible via "Tools > GI Tweaks > Bulk Renderer Selection".
 
