@@ -43,7 +43,7 @@ namespace GITweaks
                 var mrs = sharedLOD.RenderersToLightmap;
                 GITweaksLightingDataAssetEditor.CopyAtlasSettingsToRenderers(Lightmapping.lightingDataAsset, lod0, mrs);
             }
-            if (sharedLODs.Length > 0)
+            if (GITweaksSettingsWindow.IsEnabled(GITweak.Logging) && sharedLODs.Length > 0)
                 Debug.Log($"[GITweaks] Finished re-arranging {sharedLODs.Length} LOD groups for sharing.");
         }
 
@@ -407,11 +407,12 @@ namespace GITweaks
             GITweaksLightingDataAssetEditor.UpdateAtlassing(lda, initialAtlassing);
             GITweaksLightingDataAssetEditor.UpdateLightmaps(lda, newLightmaps);
 
-            Debug.Log($"[GITweaks] Finished re-packing atlasses. " +
-                $"New atlas count: {newLightmaps.Length}. " +
-                $"Old atlas count: {initialLightmaps.Length}. " +
-                $"New coverage: {GetCoveragePercentageInRange(atlassingCache) * 100}%. " +
-                $"Old coverage: {GetCoveragePercentageInRange(initialAtlassingCache) * 100}%. ");
+            if (GITweaksSettingsWindow.IsEnabled(GITweak.Logging))
+                Debug.Log($"[GITweaks] Finished re-packing atlasses. " +
+                    $"New atlas count: {newLightmaps.Length}. " +
+                    $"Old atlas count: {initialLightmaps.Length}. " +
+                    $"New coverage: {GetCoveragePercentageInRange(atlassingCache) * 100}%. " +
+                    $"Old coverage: {GetCoveragePercentageInRange(initialAtlassingCache) * 100}%. ");
         }
     }
 }

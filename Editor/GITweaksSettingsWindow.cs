@@ -13,6 +13,7 @@ namespace GITweaks
 {
     public enum GITweak
     {
+        Logging,
         ClickableLightmapCharts,
         BakedTransmissionViewModes,
         BetterLDAInspector,
@@ -36,7 +37,7 @@ namespace GITweaks
         - Shadow only debug view
         - Post-denoising (no need to bake)
         - Dropdown for lightmap index in preview window
-        - Atlassing post bake optim
+        X Atlassing post bake optim
         X Change lightmapped renderer to probe lit without needing rebake
         X Create default skybox button
         X Transparency view mode
@@ -73,6 +74,7 @@ namespace GITweaks
 
         private static readonly Dictionary<GITweak, bool> defaultValues = new Dictionary<GITweak, bool>()
         {
+            { GITweak.Logging, true },
             { GITweak.ClickableLightmapCharts, true },
             { GITweak.BakedTransmissionViewModes, true },
             { GITweak.BetterLDAInspector, true },
@@ -116,6 +118,7 @@ namespace GITweaks
             tweakTogglesHeader = EditorGUILayout.BeginFoldoutHeaderGroup(tweakTogglesHeader, "Tweak toggles");
             if (tweakTogglesHeader)
             {
+                ShowTweakToggle(GITweak.Logging, "Enable console logging");
                 ShowTweakToggle(GITweak.ClickableLightmapCharts, "Clickable charts in Lightmap Preview Window");
                 ShowTweakToggle(GITweak.BetterLDAInspector, "Better Lighting Data asset inspector");
                 ShowTweakToggle(GITweak.LightmapFlagsDropdown, "Show \"Lightmap Flags\" dropdown in material inspector");
