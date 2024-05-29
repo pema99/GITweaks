@@ -21,6 +21,7 @@ namespace GITweaks
         AutomaticEmbeddedLightingSettings,
         BetterLightingSettingsDefaults,
         NewSkyboxButton,
+        LightmapPreviewDropdown,
         LightmappedToProbeLit,
         SharedLODGroupComponents,
         OptimizeLightmapSizes,
@@ -36,7 +37,7 @@ namespace GITweaks
         - Seam stitching across meshes
         - Shadow only debug view
         - Post-denoising (no need to bake)
-        - Dropdown for lightmap index in preview window
+        X Dropdown for lightmap index in preview window
         X Atlassing post bake optim
         X Change lightmapped renderer to probe lit without needing rebake
         X Create default skybox button
@@ -54,7 +55,7 @@ namespace GITweaks
         public static void ShowExample()
         {
             GITweaksSettingsWindow wnd = GetWindow<GITweaksSettingsWindow>();
-            wnd.minSize = new Vector2(350, 300);
+            wnd.minSize = new Vector2(350, 330);
             wnd.titleContent = new GUIContent("GI Tweaks Settings");
         }
 
@@ -72,6 +73,16 @@ namespace GITweaks
                 .Invoke(null, new object[0]);
         }
 
+        [MenuItem("Tools/GI Tweaks/Open Lightmap Preview")]
+        public static void OpenLightmapPreview()
+        {
+            var type = Type.GetType("UnityEditor.LightmapPreviewWindow, UnityEditor");
+            var window = EditorWindow.CreateInstance(type) as EditorWindow;
+            type.GetField("m_LightmapIndex", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).SetValue(window, 0);
+            window.minSize = new Vector2(360, 390);
+            window.Show();
+        }
+
         private static readonly Dictionary<GITweak, bool> defaultValues = new Dictionary<GITweak, bool>()
         {
             { GITweak.Logging, true },
@@ -82,6 +93,7 @@ namespace GITweaks
             { GITweak.AutomaticEmbeddedLightingSettings, true },
             { GITweak.BetterLightingSettingsDefaults, true },
             { GITweak.NewSkyboxButton, true },
+            { GITweak.LightmapPreviewDropdown, true },
             { GITweak.LightmappedToProbeLit, true },
             { GITweak.OptimizeLightmapSizes, false },
             { GITweak.SharedLODGroupComponents, true },
@@ -125,6 +137,7 @@ namespace GITweaks
                 ShowTweakToggle(GITweak.AutomaticEmbeddedLightingSettings, "Use embedded Lighting Settings asset for new scenes");
                 ShowTweakToggle(GITweak.BetterLightingSettingsDefaults, "Default to GPU lightmapper and no view prioritization");
                 ShowTweakToggle(GITweak.NewSkyboxButton, "Show New and Clone buttons for skybox materials");
+                ShowTweakToggle(GITweak.LightmapPreviewDropdown, "Show lightmap index dropdown in preview window");
                 ShowTweakToggle(GITweak.LightmappedToProbeLit, "Allow converting lightmapped renderers to probe-lit");
 
                 EditorGUI.BeginChangeCheck();

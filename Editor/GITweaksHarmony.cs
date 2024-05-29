@@ -120,6 +120,44 @@ namespace GITweaks
         }
 
         [HarmonyPatch]
+        private class LightmapPreviewDropdownWindow
+        {
+            [HarmonyTargetMethod]
+            static MethodBase TargetMethod() => AccessTools.Method(System.Type.GetType("UnityEditor.LightmapPreviewWindow, UnityEditor"), "DrawPreviewSettings");
+
+            [HarmonyPostfix]
+            static void Prefix(object __instance)
+            {
+                if (!GITweaksSettingsWindow.IsEnabled(GITweak.LightmapPreviewDropdown))
+                    return;
+
+                try
+                {
+                    System.Type thisType = __instance.GetType();
+                    int id = (int)AccessTools.Field(thisType, "m_InstanceID").GetValue(__instance);
+                    if (id != -1)
+                        return;
+
+                    var lightmapIndexField = AccessTools.Field(thisType, "m_LightmapIndex");
+
+                    int lmCount = LightmapSettings.lightmaps.Length;
+                    var lms = Enumerable.Range(0, lmCount);
+                    EditorGUI.BeginChangeCheck();
+                    int newLmIndex = EditorGUILayout.IntPopup((int)lightmapIndexField.GetValue(__instance), lms.Select(x => $"Lightmap {x}").ToArray(), lms.ToArray());
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        lightmapIndexField.SetValue(__instance, newLmIndex);
+                    }
+
+                }
+                catch
+                {
+                    // Fail silently, don't want to bother the user
+                }
+            }
+        }
+
+        [HarmonyPatch]
         private class ClickableUVChartPatch
         {
             [HarmonyTargetMethod]
