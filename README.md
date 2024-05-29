@@ -27,6 +27,17 @@ The Lightmap Preview window can highlight the UV chart of the currently selected
 
 ![ZFvbglRVTT](https://github.com/pema99/GITweaks/assets/11212115/ec36ed87-5bdf-489d-b94d-cbe8c5595bd4)
 
+### Lightmap index dropdown in Lightmap Preview window
+This tweak adds a dropdown to the Lightmap Preview window that lets you switch between viewing different lightmaps.
+
+Before:
+
+![image](https://github.com/pema99/GITweaks/assets/11212115/7bb1490b-7001-463e-9590-6d3499d24ec2)
+
+After:
+
+![image](https://github.com/pema99/GITweaks/assets/11212115/d3f8f39e-9588-4ea2-a5cf-4fa3100910a8)
+
 ### Optimize lightmap sizes after baking
 > Note: This feature does not work with the Bakery lightmapper.
 
