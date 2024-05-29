@@ -69,6 +69,11 @@ public class GITweaksSharedLODEditor : Editor
                 $"LOD0 contains multiple renderers. Only the first MeshRenderer, {firstMR}, will have its lightmap data copied to other LODs.",
                 MessageType.Warning);
         }
+
+#if BAKERY_INCLUDED
+        EditorGUILayout.HelpBox("This component is incompatible with Bakery. If you intend to use Bakery, please disable it.", MessageType.Warning);
+#endif
+
         serializedObject.ApplyModifiedProperties();
     }
 }

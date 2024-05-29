@@ -60,6 +60,8 @@ namespace GITweaks
         {
             if (from.lightmapIndex >= 65534 && from.realtimeLightmapIndex >= 65534)
                 return;
+            if (lda == null)
+                return;
 
             using SerializedObject o = new SerializedObject(lda);
             inspectorModeObject.SetValue(o, InspectorMode.DebugInternal);
@@ -84,6 +86,9 @@ namespace GITweaks
                     break;
                 }
             }
+
+            if (lm0Index < 0)
+                return;
 
             // Append LODs
             var lmVals = o.FindProperty("m_LightmappedRendererData");
@@ -249,6 +254,9 @@ namespace GITweaks
 
         public static void MakeRendererProbeLit(LightingDataAsset lda, MeshRenderer mr)
         {
+            if (lda == null)
+                return;
+
             using SerializedObject o = new SerializedObject(lda);
             inspectorModeObject.SetValue(o, InspectorMode.DebugInternal);
 
@@ -271,6 +279,9 @@ namespace GITweaks
                     break;
                 }
             }
+
+            if (mrIndex < 0)
+                return;
 
             var lmVals = o.FindProperty("m_LightmappedRendererData");
             var atlasData = lmVals.GetArrayElementAtIndex(mrIndex);

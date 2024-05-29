@@ -21,9 +21,11 @@ namespace GITweaks
 
         private static void BakeFinished()
         {
-            RepackAtlasses();
+            if (GITweaksSettingsWindow.IsEnabled(GITweak.OptimizeLightmapSizes))
+                RepackAtlasses();
 
-            RearrangeLODs();
+            if (GITweaksSettingsWindow.IsEnabled(GITweak.SharedLODGroupComponents))
+                RearrangeLODs();
 
             GITweaksLightingDataAssetEditor.RefreshLDA();
         }
@@ -103,35 +105,46 @@ namespace GITweaks
             }
         }
 
-        private static float GetCoveragePercentage(AtlassingCache atlassing, int lightmapIndex)
-        {
-            Vector2Int lightmapSize = atlassing.AtlasSizes[lightmapIndex];
-            int lightmapArea = lightmapSize.x * lightmapSize.y;
-
-            float pixelRectsArea = atlassing.AtlasIndices
-                .Where(x => x.Value == lightmapIndex)
-                .Select(x => atlassing.PixelRects[x.Key].size)
-                .Select(x => x.x * x.y)
-                .Sum();
-
-            return pixelRectsArea / lightmapArea;
-        }
-
-        private static float GetTotalCoveragePercentage(AtlassingCache atlassing)
+        private static float GetCoveragePercentageInRange(AtlassingCache atlassing, int startIndex, int amount)
         {
             int lightmapArea = 0;
             float pixelRectsArea = 0;
 
-            for (int i = 0; i < atlassing.AtlasSizes.Count; i++)
+            for (int i = 0; i < amount; i++)
             {
-                Vector2Int lightmapSize = atlassing.AtlasSizes[i];
+                int lightmapIndex = startIndex + i;
+
+                Vector2Int lightmapSize = atlassing.AtlasSizes[lightmapIndex];
                 lightmapArea += lightmapSize.x * lightmapSize.y;
 
                 pixelRectsArea += atlassing.AtlasIndices
-                    .Where(x => x.Value == i)
+                    .Where(x => x.Value == lightmapIndex)
                     .Select(x => atlassing.PixelRects[x.Key].size)
                     .Select(x => x.x * x.y)
                     .Sum();
+            }
+
+            return pixelRectsArea / lightmapArea;
+        }
+
+        private static float GetCoveragePercentage(AtlassingCache atlassing, int lightmapIndex)
+        {
+            return GetCoveragePercentageInRange(atlassing, lightmapIndex, 1);
+        }
+
+        private static float GetCoveragePercentageInRange(AtlassingCache atlassing)
+        {
+            return GetCoveragePercentageInRange(atlassing, 0, atlassing.AtlasSizes.Count);
+        }
+
+        private static float GetSplitCoveragePercentage(Vector2Int splitAtlasSize, int splitAtlasCount, IEnumerable<(Component key, RectInt rect)> instances)
+        {
+            int lightmapArea = splitAtlasSize.x * splitAtlasSize.y * splitAtlasCount;
+            float pixelRectsArea = 0;
+
+            foreach (var instance in instances)
+            {
+                pixelRectsArea += instance.rect.width * instance.rect.height;
             }
 
             return pixelRectsArea / lightmapArea;
@@ -197,19 +210,20 @@ namespace GITweaks
         {
             var lda = Lightmapping.lightingDataAsset;
             var initialLightmaps = LightmapSettings.lightmaps;
-            if (initialLightmaps.Length == 0)
+            if (initialLightmaps.Length == 0 || lda == null)
                 return;
 
             bool hasDirectionality = initialLightmaps[0].lightmapDir != null;
             bool hasShadowmask = initialLightmaps[0].shadowMask != null;
 
             // Settings
-            float minCoveragePercent = 0.85f;
-            int minLightmapSize = 64;
-            bool allowNonSquareLightmaps = false;
+            float minCoveragePercent = GITweaksSettingsWindow.LightmapOptimizationTargetCoverage;
+            int minLightmapSize = GITweaksSettingsWindow.LightmapOptimizationMinLightmapSize;
             int padding = Mathf.Max(3, Lightmapping.lightingSettings.lightmapPadding);
 
             var initialAtlassing = GITweaksLightingDataAssetEditor.GetAtlassing(lda);
+            if (initialAtlassing == null || initialAtlassing.Count == 0)
+                return;
 
             List<Vector2Int> atlasSizes = new List<Vector2Int>();
             for (int i = 0; i < initialLightmaps.Length; i++)
@@ -219,21 +233,13 @@ namespace GITweaks
 
             bool didRepack = false;
 
-            List<int> atlassesToRepack = new List<int>();
             for (int i = 0; i < atlassingCache.AtlasSizes.Count; i++)
             {
-                // TODO: Just shrinking (think shadowmask)
                 // TODO: Halving
-                // TODO: Try splitting even more
 
                 float coverage = GetCoveragePercentage(atlassingCache, i);
                 if (coverage < minCoveragePercent)
                 {
-                    // === Shrink ===
-
-
-                    // === Split into quadrants ===
-
                     // Get quadrant size, check it is big enough
                     var splitLightmapSize = atlassingCache.AtlasSizes[i] / 2;
                     if (splitLightmapSize.x < minLightmapSize || splitLightmapSize.y < minLightmapSize)
@@ -243,47 +249,45 @@ namespace GITweaks
                     var renderers = atlassingCache.RenderersPerAtlas[i];
                     var rectsToPack = renderers.Select(x => (x, atlassingCache.PixelRects[x]));
 
-                    // Try to repack into 3 quadrants. If we require 4, there is no point.
-                    Pack(splitLightmapSize.x, splitLightmapSize.y, padding, rectsToPack, out var packedRectsA, out var remainderA);
-                    Pack(splitLightmapSize.x, splitLightmapSize.y, padding, remainderA, out var packedRectsB, out var remainderB);
-                    if (!Pack(splitLightmapSize.x, splitLightmapSize.y, padding, remainderB, out var packedRectsC, out var remainderC))
+                    // Try to repack 1 smaller quadrant. If we can't fit anything, go to next atlas.
+                    Pack(splitLightmapSize.x, splitLightmapSize.y, padding, rectsToPack, out var packedRectsFirst, out var remainder);
+                    if (packedRectsFirst.Count == 0)
                         continue;
 
-                    // If we succeeded, we need to update the cache with the new atlases
-                    int splitCount = (packedRectsA.Any() ? 1 : 0) + (packedRectsB.Any() ? 1 : 0) + (packedRectsC.Any() ? 1 : 0);
+                    // Repack into smaller quadrants until we either packed every rect, or until we fail to pack anymore
+                    var packedRects = new List<HashSet<(Component key, RectInt rect)>>() { packedRectsFirst };
+                    while (remainder.Count > 0)
+                    {
+                        Pack(splitLightmapSize.x, splitLightmapSize.y, padding, remainder, out var packedRectsCont, out remainder);
+                        if (packedRectsCont.Count == 0)
+                            break;
+                        packedRects.Add(packedRectsCont);
+                    }
+
+                    // If there is still some remainder, this packing isn't valid, so go to next atlas.
+                    if (remainder.Count > 0)
+                        continue;
+
+                    // If the coverage is now worse, there is no saving - go to next atlas.
+                    if (GetSplitCoveragePercentage(splitLightmapSize, packedRects.Count, rectsToPack) <= coverage)
+                        continue;
 
                     atlassingCache.AtlasSizes.RemoveAt(i);
-                    atlassingCache.AtlasSizes.InsertRange(i, Enumerable.Range(0, splitCount).Select(_ => splitLightmapSize));
+                    atlassingCache.AtlasSizes.InsertRange(i, packedRects.Select(_ => splitLightmapSize));
 
-                    HashSet<Component>[] newRenderersPerAtlas =
-                    {
-                        packedRectsA.Select(x => x.key).ToHashSet(),
-                        packedRectsB.Select(x => x.key).ToHashSet(),
-                        packedRectsC.Select(x => x.key).ToHashSet(),
-                    };
+                    HashSet<Component>[] newRenderersPerAtlas = packedRects.Select(rects => rects.Select(x => x.key).ToHashSet()).ToArray();
                     atlassingCache.RenderersPerAtlas.RemoveAt(i);
-                    atlassingCache.RenderersPerAtlas.InsertRange(i, newRenderersPerAtlas.Take(splitCount));
+                    atlassingCache.RenderersPerAtlas.InsertRange(i, newRenderersPerAtlas.Take(packedRects.Count));
 
-                    foreach (var renderer in packedRectsA)
+                    for (int group = 0; group < packedRects.Count; group++)
                     {
-                        atlassingCache.AtlasIndices[renderer.key] = i + 0;
-                        atlassingCache.PixelRects[renderer.key] = renderer.rect;
-                        atlassingCache.PixelRectsFractional[renderer.key] = renderer.rect.ToRect();
-                        atlassingCache.RendererScale[renderer.key] *= 2;
-                    }
-                    foreach (var renderer in packedRectsB)
-                    {
-                        atlassingCache.AtlasIndices[renderer.key] = i + 1;
-                        atlassingCache.PixelRects[renderer.key] = renderer.rect;
-                        atlassingCache.PixelRectsFractional[renderer.key] = renderer.rect.ToRect();
-                        atlassingCache.RendererScale[renderer.key] *= 2;
-                    }
-                    foreach (var renderer in packedRectsC)
-                    {
-                        atlassingCache.AtlasIndices[renderer.key] = i + 2;
-                        atlassingCache.PixelRects[renderer.key] = renderer.rect;
-                        atlassingCache.PixelRectsFractional[renderer.key] = renderer.rect.ToRect();
-                        atlassingCache.RendererScale[renderer.key] *= 2;
+                        foreach (var renderer in packedRects[group])
+                        {
+                            atlassingCache.AtlasIndices[renderer.key] = i + group;
+                            atlassingCache.PixelRects[renderer.key] = renderer.rect;
+                            atlassingCache.PixelRectsFractional[renderer.key] = renderer.rect.ToRect();
+                            atlassingCache.RendererScale[renderer.key] *= 2;
+                        }
                     }
 
                     didRepack = true;
@@ -406,8 +410,8 @@ namespace GITweaks
             Debug.Log($"[GITweaks] Finished re-packing atlasses. " +
                 $"New atlas count: {newLightmaps.Length}. " +
                 $"Old atlas count: {initialLightmaps.Length}. " +
-                $"New coverage: {GetTotalCoveragePercentage(atlassingCache) * 100}%. " +
-                $"Old coverage: {GetTotalCoveragePercentage(initialAtlassingCache) * 100}%. ");
+                $"New coverage: {GetCoveragePercentageInRange(atlassingCache) * 100}%. " +
+                $"Old coverage: {GetCoveragePercentageInRange(initialAtlassingCache) * 100}%. ");
         }
     }
 }

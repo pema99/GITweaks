@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 
@@ -203,6 +204,171 @@ namespace GITweaks
         public static void Texture2DToRenderTexture(Texture2D src, RenderTexture dst)
         {
             Graphics.Blit(src, dst);
+        }
+    }
+
+    public class PrefInt
+    {
+        int Value;
+        string Name;
+        bool Loaded;
+
+        public PrefInt(string name, int value)
+        {
+            Name = $"GITweaks.{name}";
+            Loaded = false;
+            Value = value;
+        }
+
+        private void Load()
+        {
+            if (Loaded)
+                return;
+
+            Loaded = true;
+            Value = EditorPrefs.GetInt(Name, Value);
+        }
+
+        public int value
+        {
+            get { Load(); return Value; }
+            set
+            {
+                Load();
+                if (Value == value)
+                    return;
+                Value = value;
+                EditorPrefs.SetInt(Name, value);
+            }
+        }
+
+        public static implicit operator int(PrefInt s)
+        {
+            return s.value;
+        }
+    }
+
+    public class PrefFloat
+    {
+        float Value;
+        string Name;
+        bool Loaded;
+
+        public PrefFloat(string name, float value)
+        {
+            Name = $"GITweaks.{name}";
+            Loaded = false;
+            Value = value;
+        }
+
+        private void Load()
+        {
+            if (Loaded)
+                return;
+
+            Loaded = true;
+            Value = EditorPrefs.GetFloat(Name, Value);
+        }
+
+        public float value
+        {
+            get { Load(); return Value; }
+            set
+            {
+                Load();
+                if (Value == value)
+                    return;
+                Value = value;
+                EditorPrefs.SetFloat(Name, value);
+            }
+        }
+
+        public static implicit operator float(PrefFloat s)
+        {
+            return s.value;
+        }
+    }
+
+    public class PrefBool
+    {
+        bool Value;
+        string Name;
+        bool Loaded;
+
+        public PrefBool(string name, bool value)
+        {
+            Name = $"GITweaks.{name}";
+            Loaded = false;
+            Value = value;
+        }
+
+        private void Load()
+        {
+            if (Loaded)
+                return;
+
+            Loaded = true;
+            Value = EditorPrefs.GetBool(Name, Value);
+        }
+
+        public bool value
+        {
+            get { Load(); return Value; }
+            set
+            {
+                Load();
+                if (Value == value)
+                    return;
+                Value = value;
+                EditorPrefs.SetBool(Name, value);
+            }
+        }
+
+        public static implicit operator bool(PrefBool s)
+        {
+            return s.value;
+        }
+    }
+
+    public class PrefEnum<TEnum>
+        where TEnum : System.Enum
+    {
+        TEnum Value;
+        string Name;
+        bool Loaded;
+
+        public PrefEnum(string name, TEnum value)
+        {
+            Name = $"GITweaks.{name}";
+            Loaded = false;
+            Value = value;
+        }
+
+        private void Load()
+        {
+            if (Loaded)
+                return;
+
+            Loaded = true;
+            Value = (TEnum)(object)EditorPrefs.GetInt(Name, (int)(object)Value);
+        }
+
+        public TEnum value
+        {
+            get { Load(); return Value; }
+            set
+            {
+                Load();
+                if (EqualityComparer<TEnum>.Default.Equals(Value, value))
+                    return;
+                Value = value;
+                EditorPrefs.SetInt(Name, (int)(object)value);
+            }
+        }
+
+        public static implicit operator TEnum(PrefEnum<TEnum> s)
+        {
+            return s.value;
         }
     }
 }

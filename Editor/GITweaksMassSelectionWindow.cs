@@ -20,7 +20,6 @@ namespace GITweaks
             wnd.titleContent = new GUIContent("Bulk Renderer Selection");
         }
 
-        bool headerMassRenderSelection = true;
         bool filterActiveObjects = false;
         bool filterGIContributors = true;
         bool filterReceiveGI = false;
