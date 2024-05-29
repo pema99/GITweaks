@@ -21,6 +21,15 @@ namespace GITweaks
 
         private static void BakeFinished()
         {
+            RepackAtlasses();
+
+            RearrangeLODs();
+
+            GITweaksLightingDataAssetEditor.RefreshLDA();
+        }
+
+        private static void RearrangeLODs()
+        {
             var sharedLODs = Object.FindObjectsByType<GITweaksSharedLOD>(FindObjectsSortMode.None);
             foreach (var sharedLOD in sharedLODs)
             {
@@ -32,16 +41,8 @@ namespace GITweaks
                 var mrs = sharedLOD.RenderersToLightmap;
                 GITweaksLightingDataAssetEditor.CopyAtlasSettingsToRenderers(Lightmapping.lightingDataAsset, lod0, mrs);
             }
-
-            RepackAtlasses();
-
-
-            GITweaksLightingDataAssetEditor.RefreshLDA();
-
-            //var lightmapDatas = LightmapSettings.lightmaps;
-            //lightmapDatas[0].lightmapColor = GetRWCopy(lightmapDatas[0].lightmapColor, 512, 256);
-            //lightmapDatas[0].lightmapDir = GetRWCopy(lightmapDatas[0].lightmapDir, 512, 256);
-            //LightmapSettings.lightmaps = lightmapDatas;
+            if (sharedLODs.Length > 0)
+                Debug.Log($"[GITweaks] Finished re-arranging {sharedLODs.Length} LOD groups for sharing.");
         }
 
         class AtlassingCache
@@ -112,6 +113,26 @@ namespace GITweaks
                 .Select(x => atlassing.PixelRects[x.Key].size)
                 .Select(x => x.x * x.y)
                 .Sum();
+
+            return pixelRectsArea / lightmapArea;
+        }
+
+        private static float GetTotalCoveragePercentage(AtlassingCache atlassing)
+        {
+            int lightmapArea = 0;
+            float pixelRectsArea = 0;
+
+            for (int i = 0; i < atlassing.AtlasSizes.Count; i++)
+            {
+                Vector2Int lightmapSize = atlassing.AtlasSizes[i];
+                lightmapArea += lightmapSize.x * lightmapSize.y;
+
+                pixelRectsArea += atlassing.AtlasIndices
+                    .Where(x => x.Value == i)
+                    .Select(x => atlassing.PixelRects[x.Key].size)
+                    .Select(x => x.x * x.y)
+                    .Sum();
+            }
 
             return pixelRectsArea / lightmapArea;
         }
@@ -207,6 +228,11 @@ namespace GITweaks
                 float coverage = GetCoveragePercentage(atlassingCache, i);
                 if (coverage < minCoveragePercent)
                 {
+                    // === Shrink ===
+
+
+                    // === Split into quadrants ===
+
                     // Get quadrant size, check it is big enough
                     var splitLightmapSize = atlassingCache.AtlasSizes[i] / 2;
                     if (splitLightmapSize.x < minLightmapSize || splitLightmapSize.y < minLightmapSize)
@@ -375,6 +401,12 @@ namespace GITweaks
 
             GITweaksLightingDataAssetEditor.UpdateAtlassing(lda, initialAtlassing);
             GITweaksLightingDataAssetEditor.UpdateLightmaps(lda, newLightmaps);
+
+            Debug.Log($"[GITweaks] Finished re-packing atlasses. " +
+                $"New atlas count: {newLightmaps.Length}. " +
+                $"Old atlas count: {initialLightmaps.Length}. " +
+                $"New coverage: {GetTotalCoveragePercentage(atlassingCache) * 100}%. " +
+                $"Old coverage: {GetTotalCoveragePercentage(initialAtlassingCache) * 100}%. ");
         }
     }
 }
