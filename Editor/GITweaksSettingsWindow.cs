@@ -36,7 +36,6 @@ namespace GITweaks
         - Probe placement projection guide
         - Seam stitching across meshes
         - Shadow only debug view
-        - Post-denoising (no need to bake)
         X Dropdown for lightmap index in preview window
         X Atlassing post bake optim
         X Change lightmapped renderer to probe lit without needing rebake
