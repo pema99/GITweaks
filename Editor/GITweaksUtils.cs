@@ -205,6 +205,25 @@ namespace GITweaks
         {
             Graphics.Blit(src, dst);
         }
+
+        public static void CopyImporterSettingsAndReimport(Texture2D template, string dstPath)
+        {
+            var srcImporter = AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(template));
+            var dstImporter = AssetImporter.GetAtPath(dstPath);
+
+            var srcImporterObj = new SerializedObject(srcImporter);
+            var dstImporterObj = new SerializedObject(dstImporter);
+
+            var srcIter = srcImporterObj.GetIterator();
+
+            while (srcIter.Next(true))
+            {
+                dstImporterObj.CopyFromSerializedProperty(srcIter);
+            }
+
+            dstImporterObj.ApplyModifiedProperties();
+            dstImporter.SaveAndReimport();
+        }
     }
 
     public class PrefInt

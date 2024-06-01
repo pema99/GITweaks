@@ -28,6 +28,18 @@ namespace GITweaks
                 RearrangeLODs();
 
             GITweaksLightingDataAssetEditor.RefreshLDA();
+
+            /*var seamFixes = Object.FindObjectsByType<GITweaksSeamFix>(FindObjectsSortMode.None);
+            foreach (var seamFix in seamFixes)
+            {
+                var selfMr = seamFix.GetComponent<MeshRenderer>();
+                var otherMrs = seamFix.RenderersToFixSeamsWith;
+
+                foreach (var otherMr in otherMrs)
+                {
+                    GITweaksSeamFixer.FixSeams(selfMr, otherMr);
+                }
+            }*/
         }
 
         private static void RearrangeLODs()
@@ -185,25 +197,6 @@ namespace GITweaks
         {
             pos -= Vector2Int.one*2;
             return pos;
-        }
-
-        private static void CopyImporterSettingsAndReimport(Texture2D template, string dstPath)
-        {
-            var srcImporter = AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(template));
-            var dstImporter = AssetImporter.GetAtPath(dstPath);
-
-            var srcImporterObj = new SerializedObject(srcImporter);
-            var dstImporterObj = new SerializedObject(dstImporter);
-
-            var srcIter = srcImporterObj.GetIterator();
-
-            while (srcIter.Next(true))
-            {
-                dstImporterObj.CopyFromSerializedProperty(srcIter);
-            }
-
-            dstImporterObj.ApplyModifiedProperties();
-            dstImporter.SaveAndReimport();
         }
 
         private static void RepackAtlasses()
@@ -374,7 +367,7 @@ namespace GITweaks
                 File.WriteAllBytes(lmPath, newColor.EncodeToEXR());
                 Object.DestroyImmediate(newColor);
                 AssetDatabase.ImportAsset(lmPath, ImportAssetOptions.ForceSynchronousImport);
-                CopyImporterSettingsAndReimport(initialLightmaps[0].lightmapColor, lmPath);
+                GITweaksUtils.CopyImporterSettingsAndReimport(initialLightmaps[0].lightmapColor, lmPath);
                 newLightmaps[i].lightmapColor = AssetDatabase.LoadAssetAtPath<Texture2D>(lmPath);
 
                 if (hasDirectionality)
@@ -386,7 +379,7 @@ namespace GITweaks
                     File.WriteAllBytes(dirPath, newDir.EncodeToPNG());
                     Object.DestroyImmediate(newDir);
                     AssetDatabase.ImportAsset(dirPath, ImportAssetOptions.ForceSynchronousImport);
-                    CopyImporterSettingsAndReimport(initialLightmaps[0].lightmapDir, dirPath);
+                    GITweaksUtils.CopyImporterSettingsAndReimport(initialLightmaps[0].lightmapDir, dirPath);
                     newLightmaps[i].lightmapDir = AssetDatabase.LoadAssetAtPath<Texture2D>(dirPath);
                 }
 
@@ -399,7 +392,7 @@ namespace GITweaks
                     File.WriteAllBytes(dirPath, newShadow.EncodeToPNG());
                     Object.DestroyImmediate(newShadow);
                     AssetDatabase.ImportAsset(dirPath, ImportAssetOptions.ForceSynchronousImport);
-                    CopyImporterSettingsAndReimport(initialLightmaps[0].shadowMask, dirPath);
+                    GITweaksUtils.CopyImporterSettingsAndReimport(initialLightmaps[0].shadowMask, dirPath);
                     newLightmaps[i].shadowMask = AssetDatabase.LoadAssetAtPath<Texture2D>(dirPath);
                 }
             }
