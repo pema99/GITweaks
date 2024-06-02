@@ -39,10 +39,72 @@ namespace GITweaks
 
             if (GUILayout.Button("Apply fix"))
             {
-                GITweaksSeamFixer.FixSeams(sf, true);
+                GITweaksLightingDataAssetEditor.RefreshLDA();
+                DelayApplyTarget = sf;
+                EditorApplication.update += DelayApply;
             }
 
             serializedObject.ApplyModifiedProperties();
+        }
+
+        private static GITweaksSeamFix DelayApplyTarget;
+        private static void DelayApply()
+        {
+            if (DelayApplyTarget != null)
+                GITweaksSeamFixer.FixSeams(DelayApplyTarget, true);
+            EditorApplication.update -= DelayApply;
+        }
+    }
+
+    [CustomEditor(typeof(GITweaksSeamFixVolume))]
+    public class GITweaksSeamFixVolumeEditor : Editor
+    {
+        [MenuItem("GameObject/Light/GI Tweaks Seam Fix Volume")]
+        public static void AddVolume()
+        {
+            GameObject go = new GameObject("Seam Fix Volume");
+            go.AddComponent<GITweaksSeamFixVolume>();
+            Selection.activeGameObject = go;
+        }
+
+        public override void OnInspectorGUI()
+        {
+            var sfv = target as GITweaksSeamFixVolume;
+            if (target == null)
+                return;
+
+            base.OnInspectorGUI(); // TODO: Better inspector
+
+            serializedObject.Update();
+
+            EditorGUILayout.BeginHorizontal();
+            if (GUILayout.Button("Preview fix"))
+            {
+                GITweaksLightingDataAssetEditor.RefreshLDA();
+                GITweaksSeamFixer.FixSeams(sfv, false);
+            }
+            if (GUILayout.Button("Reset preview"))
+            {
+                GITweaksLightingDataAssetEditor.RefreshLDA();
+            }
+            EditorGUILayout.EndHorizontal();
+
+            if (GUILayout.Button("Apply fix"))
+            {
+                GITweaksLightingDataAssetEditor.RefreshLDA();
+                DelayApplyTarget = sfv;
+                EditorApplication.update += DelayApply;
+            }
+
+            serializedObject.ApplyModifiedProperties();
+        }
+
+        private static GITweaksSeamFixVolume DelayApplyTarget;
+        private static void DelayApply()
+        {
+            if (DelayApplyTarget != null)
+                GITweaksSeamFixer.FixSeams(DelayApplyTarget, true);
+            EditorApplication.update -= DelayApply;
         }
     }
 
@@ -67,10 +129,10 @@ namespace GITweaks
             float resolution = Lightmapping.lightingSettingsDefaults.lightmapResolution;
             if (Lightmapping.TryGetLightingSettings(out var settings))
                 resolution = settings.lightmapResolution;
-            return mr.scaleInLightmap * resolution * 1.01f; // bias
+            return mr.scaleInLightmap * resolution;
         }
 
-        private static List<SamplePoint> GenerateSamplePoints(MeshRenderer selfMr)
+        private static List<SamplePoint> GenerateSamplePoints(MeshRenderer selfMr, Bounds? bounds)
         {
             var mesh = selfMr.GetComponent<MeshFilter>().sharedMesh;
 
@@ -105,7 +167,7 @@ namespace GITweaks
                 .Select(x => x.Key)
                 .ToArray();
 
-            float samplesPerMeter = GetSamplesPerMeter(selfMr);
+            float samplesPerMeter = GetSamplesPerMeter(selfMr) * 1.5f; // Add a bit of bias, just above sqrt(2)
 
             // Generate samples along them
             List<SamplePoint> selfSamplePoints = new List<SamplePoint>();
@@ -132,6 +194,11 @@ namespace GITweaks
                 }
             }
 
+            if (bounds != null)
+            {
+                selfSamplePoints.RemoveAll(x => !bounds.Value.Contains(x.vertex));
+            }
+
             return selfSamplePoints;
         }
 
@@ -155,6 +222,7 @@ namespace GITweaks
                     sf.GetComponent<MeshRenderer>(),
                     other,
                     saveToDisk,
+                    null,
                     sf.MaxSearchAngle,
                     sf.MaxSolverIterationCount,
                     sf.SolverTolerance,
@@ -162,19 +230,53 @@ namespace GITweaks
             }
         }
 
+        public static void FixSeams(GITweaksSeamFixVolume sfv, bool saveToDisk)
+        {
+            var bounds = new Bounds(sfv.transform.position, sfv.transform.lossyScale);
+
+            var mrs = Object.FindObjectsByType<MeshRenderer>(FindObjectsSortMode.None);
+            var filtered = new List<MeshRenderer>();
+            foreach (var mr in mrs)
+            {
+                if (bounds.Intersects(mr.bounds) && !sfv.RenderersToExclude.Contains(mr))
+                {
+                    filtered.Add(mr);
+                }
+            }
+
+            for (int i = 0; i < filtered.Count; i++)
+            {
+                MeshRenderer self = filtered[i];
+                for (int j = i + 1; j < filtered.Count; j++)
+                {
+                    MeshRenderer other = filtered[j];
+                    FixSeams(
+                        self,
+                        other,
+                        saveToDisk,
+                        bounds,
+                        sfv.MaxSearchAngle,
+                        sfv.MaxSolverIterationCount,
+                        sfv.SolverTolerance,
+                        sfv.SolverStrength);
+                }
+            }
+        }
+
         public static List<(SamplePoint self, SamplePoint other)> GenerateSamplePairs(
             MeshRenderer selfMr,
             MeshRenderer otherMr,
-            float maxSearchAngle)
+            float maxSearchAngle,
+            Bounds? bounds)
         {
             var result = new List<(SamplePoint, SamplePoint)>();
             if (!GITweaksUtils.IsLightmapped(selfMr) || !GITweaksUtils.IsLightmapped(otherMr))
                 return result;
 
-            var selfSamples = GenerateSamplePoints(selfMr);
-            var otherSamples = GenerateSamplePoints(otherMr);
+            var selfSamples = GenerateSamplePoints(selfMr, bounds);
+            var otherSamples = GenerateSamplePoints(otherMr, bounds);
 
-            float selfSamplesPerMeter = GetSamplesPerMeter(selfMr); // Add a bit of bias
+            float selfSamplesPerMeter = GetSamplesPerMeter(selfMr);
             float otherSamplesPerMeter = GetSamplesPerMeter(otherMr);
             float maxSamplesPerMeter = Mathf.Min(selfSamplesPerMeter, otherSamplesPerMeter);
             float sameDist = (1.0f / maxSamplesPerMeter) * 0.5f;
@@ -219,6 +321,7 @@ namespace GITweaks
             MeshRenderer selfMr,
             MeshRenderer otherMr,
             bool saveToDisk,
+            Bounds? bounds,
             float maxSearchAngle,
             int solveIterations,
             float solveTolerance,
@@ -228,7 +331,7 @@ namespace GITweaks
                 return;
 
             // Generate samples
-            var samplePairs = GenerateSamplePairs(selfMr, otherMr, maxSearchAngle);
+            var samplePairs = GenerateSamplePairs(selfMr, otherMr, maxSearchAngle, bounds);
             // TODO: Kernel around each sample
 
             // Get writable lightmaps
@@ -333,9 +436,6 @@ namespace GITweaks
             var initialLightmaps = LightmapSettings.lightmaps;
             if (saveToDisk)
             {
-                // Make sure our lightmaps are up to date
-                GITweaksLightingDataAssetEditor.RefreshLDA();
-
                 // Save and apply importer settings
                 MeshRenderer[] mrs = { selfMr, otherMr };
                 Texture2D[] newLMs = { selfLightmap, otherLightmap };
@@ -348,16 +448,14 @@ namespace GITweaks
                     Object.DestroyImmediate(newLMs[i]);
                     AssetDatabase.ImportAsset(lmPath, ImportAssetOptions.ForceSynchronousImport);
                     GITweaksUtils.CopyImporterSettingsAndReimport(initialLightmaps[lmIndex].lightmapColor, lmPath);
-                    initialLightmaps[i].lightmapColor = AssetDatabase.LoadAssetAtPath<Texture2D>(lmPath);
                 }
             }
             else
             {
                 initialLightmaps[selfMr.lightmapIndex].lightmapColor = selfLightmap;
                 initialLightmaps[otherMr.lightmapIndex].lightmapColor = otherLightmap;
+                LightmapSettings.lightmaps = initialLightmaps;
             }
-
-            LightmapSettings.lightmaps = initialLightmaps;
         }
         private static void BilinearSample(
             Dictionary<Vector2Int, int> pixelToPixelInfoMap,
