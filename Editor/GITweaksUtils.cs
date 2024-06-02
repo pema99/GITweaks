@@ -224,6 +224,16 @@ namespace GITweaks
             dstImporterObj.ApplyModifiedProperties();
             dstImporter.SaveAndReimport();
         }
+
+        public static bool IsLightmapped(MeshRenderer mr)
+        {
+            return mr.lightmapIndex >= 0 && mr.lightmapIndex < 65534;
+        }
+
+        public static bool IsRealtimeLightmapped(MeshRenderer mr)
+        {
+            return mr.realtimeLightmapIndex >= 0 && mr.realtimeLightmapIndex < 65534;
+        }
     }
 
     public class PrefInt

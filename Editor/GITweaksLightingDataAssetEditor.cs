@@ -58,7 +58,7 @@ namespace GITweaks
 
         public static void CopyAtlasSettingsToRenderers(LightingDataAsset lda, MeshRenderer from, MeshRenderer[] to)
         {
-            if (from.lightmapIndex >= 65534 && from.realtimeLightmapIndex >= 65534)
+            if (!GITweaksUtils.IsLightmapped(from) && !GITweaksUtils.IsRealtimeLightmapped(from))
                 return;
             if (lda == null)
                 return;

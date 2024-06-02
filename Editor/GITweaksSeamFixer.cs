@@ -62,7 +62,15 @@ namespace GITweaks
             public int lightmapIndex;
         }
 
-        private static List<SamplePoint> GenerateSamplePoints(MeshRenderer selfMr, float densityMultiplier)
+        private static float GetSamplesPerMeter(MeshRenderer mr)
+        {
+            float resolution = Lightmapping.lightingSettingsDefaults.lightmapResolution;
+            if (Lightmapping.TryGetLightingSettings(out var settings))
+                resolution = settings.lightmapResolution;
+            return mr.scaleInLightmap * resolution * 1.01f; // bias
+        }
+
+        private static List<SamplePoint> GenerateSamplePoints(MeshRenderer selfMr)
         {
             var mesh = selfMr.GetComponent<MeshFilter>().sharedMesh;
 
@@ -97,7 +105,7 @@ namespace GITweaks
                 .Select(x => x.Key)
                 .ToArray();
 
-            float samplesPerMeter = selfMr.scaleInLightmap * Lightmapping.lightingSettings.lightmapResolution * densityMultiplier;
+            float samplesPerMeter = GetSamplesPerMeter(selfMr);
 
             // Generate samples along them
             List<SamplePoint> selfSamplePoints = new List<SamplePoint>();
@@ -111,7 +119,7 @@ namespace GITweaks
                 Vector2 uvB = uvs[edges[i].indexB];
 
                 float length = Vector3.Distance(vertA, vertB);
-                int numSamples = Mathf.CeilToInt(length * samplesPerMeter);
+                int numSamples = Mathf.Max(3, Mathf.CeilToInt(length * samplesPerMeter));
                 for (int j = 0; j < numSamples; j++)
                 {
                     float t = (float)j / (float)(numSamples - 1);
@@ -147,9 +155,7 @@ namespace GITweaks
                     sf.GetComponent<MeshRenderer>(),
                     other,
                     saveToDisk,
-                    sf.MaxSearchDistance,
                     sf.MaxSearchAngle,
-                    sf.SampleDensityMultiplier,
                     sf.MaxSolverIterationCount,
                     sf.SolverTolerance,
                     sf.SolverStrength);
@@ -159,23 +165,26 @@ namespace GITweaks
         public static List<(SamplePoint self, SamplePoint other)> GenerateSamplePairs(
             MeshRenderer selfMr,
             MeshRenderer otherMr,
-            float maxSearchDistance,
-            float maxSearchAngle,
-            float sampleDensityMultiplier)
+            float maxSearchAngle)
         {
             var result = new List<(SamplePoint, SamplePoint)>();
-            if (selfMr.lightmapIndex >= 65534 || otherMr.lightmapIndex >= 65534)
+            if (!GITweaksUtils.IsLightmapped(selfMr) || !GITweaksUtils.IsLightmapped(otherMr))
                 return result;
 
-            var selfSamples = GenerateSamplePoints(selfMr, sampleDensityMultiplier);
-            var otherSamples = GenerateSamplePoints(otherMr, sampleDensityMultiplier);
+            var selfSamples = GenerateSamplePoints(selfMr);
+            var otherSamples = GenerateSamplePoints(otherMr);
+
+            float selfSamplesPerMeter = GetSamplesPerMeter(selfMr); // Add a bit of bias
+            float otherSamplesPerMeter = GetSamplesPerMeter(otherMr);
+            float maxSamplesPerMeter = Mathf.Min(selfSamplesPerMeter, otherSamplesPerMeter);
+            float sameDist = (1.0f / maxSamplesPerMeter) * 0.5f;
 
             // Find sample pairs
             foreach (var selfSample in selfSamples)
             {
                 foreach (var otherSample in otherSamples)
                 {
-                    if (Vector3.Distance(selfSample.vertex, otherSample.vertex) <= maxSearchDistance &&
+                    if (Vector3.Distance(selfSample.vertex, otherSample.vertex) <= sameDist &&
                         Vector3.Angle(selfSample.normal, otherSample.normal) < maxSearchAngle)
                     {
                         result.Add((selfSample, otherSample));
@@ -190,18 +199,19 @@ namespace GITweaks
             MeshRenderer selfMr,
             MeshRenderer otherMr,
             bool saveToDisk,
-            float maxSearchDistance,
             float maxSearchAngle,
-            float sampleDensityMultiplier,
             int solveIterations,
             float solveTolerance,
             float edgeConstraintWeight)
         {
-            if (selfMr.lightmapIndex >= 65534 || otherMr.lightmapIndex >= 65534)
+            if (!GITweaksUtils.IsLightmapped(selfMr) || !GITweaksUtils.IsLightmapped(otherMr) || LightmapSettings.lightmaps.Length == 0)
                 return;
 
+            var totalSw = System.Diagnostics.Stopwatch.StartNew();
+
             // Generate samples
-            var samplePairs = GenerateSamplePairs(selfMr, otherMr, maxSearchDistance, maxSearchAngle, sampleDensityMultiplier);
+            var samplePairs = GenerateSamplePairs(selfMr, otherMr, maxSearchAngle);
+            Debug.Log("Sample pairs: " + totalSw.ElapsedMilliseconds);
             // TODO: Kernel around each sample
 
             // Get writable lightmaps
@@ -243,6 +253,7 @@ namespace GITweaks
                     if (!pixelToPixelInfoMap.ContainsKey(selfPos) && selfPos.x < selfLightmap.width && selfPos.y < selfLightmap.height)
                     {
                         int selfIndex = selfPos.y * selfLightmap.width + selfPos.x;
+                        //selfColors[selfIndex] = Color.red;
                         pixelInfo.Add(new PixelInfo { color = selfColors[selfIndex], lightmapIndex = selfMr.lightmapIndex, position = selfPos });
                         pixelToPixelInfoMap.Add(selfPos, pixelInfo.Count - 1);
                     }
@@ -251,6 +262,7 @@ namespace GITweaks
                     if (!pixelToPixelInfoMap.ContainsKey(otherPos) && otherPos.x < otherLightmap.width && otherPos.y < otherLightmap.height)
                     {
                         int otherIndex = otherPos.y * otherLightmap.width + otherPos.x;
+                        //otherColors[otherIndex] = Color.magenta;
                         pixelInfo.Add(new PixelInfo { color = otherColors[otherIndex], lightmapIndex = otherMr.lightmapIndex, position = otherPos });
                         pixelToPixelInfoMap.Add(otherPos, pixelInfo.Count - 1);
                     }
@@ -329,6 +341,8 @@ namespace GITweaks
             }
 
             LightmapSettings.lightmaps = initialLightmaps;
+
+            Debug.Log("Total " + totalSw.ElapsedMilliseconds);
         }
         private static void BilinearSample(
             Dictionary<Vector2Int, int> pixelToPixelInfoMap,
