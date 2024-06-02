@@ -432,6 +432,7 @@ namespace GITweaks
             int n = guess.Size;
             VectorX p = new VectorX(n), r = new VectorX(n), Ap = new VectorX(n), tmp = new VectorX(n);
             VectorX x = new VectorX(n);
+            x.CopyFrom(guess);
 
             // r = b - A * x;
             SparseMat.Mul(tmp, A, x);
