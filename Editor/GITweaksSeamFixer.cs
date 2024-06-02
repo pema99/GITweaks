@@ -179,15 +179,35 @@ namespace GITweaks
             float maxSamplesPerMeter = Mathf.Min(selfSamplesPerMeter, otherSamplesPerMeter);
             float sameDist = (1.0f / maxSamplesPerMeter) * 0.5f;
 
+            var otherHashGrid = new Dictionary<Vector3Int, List<SamplePoint>>();
+            foreach (var otherSample in otherSamples)
+            {
+                Vector3Int quantized = Vector3Int.FloorToInt(otherSample.vertex / sameDist);
+                if (!otherHashGrid.TryGetValue(quantized, out var cell))
+                    otherHashGrid[quantized] = cell = new List<SamplePoint>();
+                cell.Add(otherSample);
+            }
+
             // Find sample pairs
             foreach (var selfSample in selfSamples)
             {
-                foreach (var otherSample in otherSamples)
+                Vector3Int quantized = Vector3Int.FloorToInt(selfSample.vertex / sameDist);
+
+                for (int x = 0; x < 3; x++)
+                for (int y = 0; y < 3; y++)
+                for (int z = 0; z < 3; z++)
                 {
-                    if (Vector3.Distance(selfSample.vertex, otherSample.vertex) <= sameDist &&
-                        Vector3.Angle(selfSample.normal, otherSample.normal) < maxSearchAngle)
+                    Vector3Int cellPos = quantized + new Vector3Int(x - 1, y - 1, z - 1);
+                    if (otherHashGrid.TryGetValue(cellPos, out var closeSamples))
                     {
-                        result.Add((selfSample, otherSample));
+                        foreach (var otherSample in closeSamples)
+                        {
+                            if (Vector3.Distance(selfSample.vertex, otherSample.vertex) <= sameDist &&
+                                Vector3.Angle(selfSample.normal, otherSample.normal) < maxSearchAngle)
+                            {
+                                result.Add((selfSample, otherSample));
+                            }
+                        }
                     }
                 }
             }
@@ -207,11 +227,8 @@ namespace GITweaks
             if (!GITweaksUtils.IsLightmapped(selfMr) || !GITweaksUtils.IsLightmapped(otherMr) || LightmapSettings.lightmaps.Length == 0)
                 return;
 
-            var totalSw = System.Diagnostics.Stopwatch.StartNew();
-
             // Generate samples
             var samplePairs = GenerateSamplePairs(selfMr, otherMr, maxSearchAngle);
-            Debug.Log("Sample pairs: " + totalSw.ElapsedMilliseconds);
             // TODO: Kernel around each sample
 
             // Get writable lightmaps
@@ -341,8 +358,6 @@ namespace GITweaks
             }
 
             LightmapSettings.lightmaps = initialLightmaps;
-
-            Debug.Log("Total " + totalSw.ElapsedMilliseconds);
         }
         private static void BilinearSample(
             Dictionary<Vector2Int, int> pixelToPixelInfoMap,
