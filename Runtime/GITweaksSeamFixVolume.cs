@@ -1,18 +1,16 @@
 #if UNITY_EDITOR
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class GITweaksSeamFixVolume : MonoBehaviour
 {
-    public bool RunOnBake = true;
+    public bool RunAfterBaking = true;
     public MeshRenderer[] RenderersToExclude;
 
-    [Range(0, 180)] public float MaxSearchAngle = 15;
+    [Range(0, 180)] public float MaxSurfaceAngle = 15;
+    [Min(0.001f)] public float SeamFixStrength = 5.0f;
 
     [Min(1)] public int MaxSolverIterationCount = 100;
-    [Min(0)] public float SolverTolerance = 0.001f;
-    [Min(0)] public float SolverStrength = 5.0f;
+    [Min(1e-13f)] public float SolverTolerance = 0.001f;
 
     public void OnDrawGizmosSelected()
     {

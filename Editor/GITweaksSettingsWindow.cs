@@ -25,6 +25,7 @@ namespace GITweaks
         LightmappedToProbeLit,
         SharedLODGroupComponents,
         OptimizeLightmapSizes,
+        SeamFixes,
     }
 
     public class GITweaksSettingsWindow : EditorWindow
@@ -96,6 +97,7 @@ namespace GITweaks
             { GITweak.LightmappedToProbeLit, true },
             { GITweak.OptimizeLightmapSizes, false },
             { GITweak.SharedLODGroupComponents, true },
+            { GITweak.SeamFixes, true },
         };
 
         public static PrefFloat LightmapOptimizationTargetCoverage = new PrefFloat("LightmapOptimization.TargetCoverage", 0.85f);
@@ -150,6 +152,7 @@ namespace GITweaks
                 }
 
                 ShowTweakToggle(GITweak.SharedLODGroupComponents, "Allow shared LOD group components");
+                ShowTweakToggle(GITweak.SeamFixes, "Apply seam fixes after baking");
                 ShowTweakToggle(GITweak.OptimizeLightmapSizes, "Optimize lightmap sizes after baking");
             }
             EditorGUILayout.EndFoldoutHeaderGroup();

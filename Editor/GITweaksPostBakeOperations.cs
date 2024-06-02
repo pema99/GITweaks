@@ -29,17 +29,21 @@ namespace GITweaks
 
             GITweaksLightingDataAssetEditor.RefreshLDA();
 
-            /*var seamFixes = Object.FindObjectsByType<GITweaksSeamFix>(FindObjectsSortMode.None);
-            foreach (var seamFix in seamFixes)
+            if (GITweaksSettingsWindow.IsEnabled(GITweak.SeamFixes))
             {
-                var selfMr = seamFix.GetComponent<MeshRenderer>();
-                var otherMrs = seamFix.RenderersToFixSeamsWith;
-
-                foreach (var otherMr in otherMrs)
+                var seamFixes = Object.FindObjectsByType<GITweaksSeamFix>(FindObjectsSortMode.None);
+                var seamFixVolumes = Object.FindObjectsByType<GITweaksSeamFixVolume>(FindObjectsSortMode.None);
+                foreach (var seamFix in seamFixes)
                 {
-                    GITweaksSeamFixer.FixSeams(selfMr, otherMr);
+                    if (seamFix.RunAfterBaking)
+                        GITweaksSeamFixer.FixSeams(seamFix, true);
                 }
-            }*/
+                foreach (var seamFixVolume in seamFixVolumes)
+                {
+                    if (seamFixVolume.RunAfterBaking)
+                        GITweaksSeamFixer.FixSeams(seamFixVolume, true);
+                }
+            }
         }
 
         private static void RearrangeLODs()

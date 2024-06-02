@@ -223,10 +223,10 @@ namespace GITweaks
                     other,
                     saveToDisk,
                     null,
-                    sf.MaxSearchAngle,
+                    sf.MaxSurfaceAngle,
                     sf.MaxSolverIterationCount,
                     sf.SolverTolerance,
-                    sf.SolverStrength);
+                    sf.SeamFixStrength);
             }
         }
 
@@ -255,10 +255,10 @@ namespace GITweaks
                         other,
                         saveToDisk,
                         bounds,
-                        sfv.MaxSearchAngle,
+                        sfv.MaxSurfaceAngle,
                         sfv.MaxSolverIterationCount,
                         sfv.SolverTolerance,
-                        sfv.SolverStrength);
+                        sfv.SeamFixStrength);
                 }
             }
         }
