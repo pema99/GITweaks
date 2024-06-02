@@ -51,7 +51,7 @@ namespace GITweaks
         public struct SamplePoint
         {
             public Vector3 vertex;
-            //public Vector3 normal; // TODO
+            public Vector3 normal;
             public Vector2 uv;
         }
 
@@ -68,9 +68,13 @@ namespace GITweaks
 
             // Get attributes
             var verts = mesh.vertices;
+            var normals = mesh.normals;
             var l2w = selfMr.transform.localToWorldMatrix;
             for (int i = 0; i < verts.Length; i++)
+            {
                 verts[i] = l2w.MultiplyPoint3x4(verts[i]);
+                normals[i] = l2w.MultiplyVector(normals[i]);
+            }
             var uvs = mesh.uv2;
             if (uvs == null || uvs.Length == 0) uvs = mesh.uv;
             var indices = mesh.triangles;
@@ -101,6 +105,8 @@ namespace GITweaks
             {
                 Vector3 vertA = verts[edges[i].indexA];
                 Vector3 vertB = verts[edges[i].indexB];
+                Vector3 normalA = normals[edges[i].indexA].normalized;
+                Vector3 normalB = normals[edges[i].indexB].normalized;
                 Vector2 uvA = uvs[edges[i].indexA];
                 Vector2 uvB = uvs[edges[i].indexB];
 
@@ -112,6 +118,7 @@ namespace GITweaks
                     selfSamplePoints.Add(new SamplePoint
                     {
                         vertex = Vector3.Lerp(vertA, vertB, t),
+                        normal = Vector3.Lerp(normalA, normalB, t).normalized, // TODO: Slerp ?
                         uv = Vector2.Lerp(uvA, uvB, t)
                     });
                 }
@@ -141,6 +148,7 @@ namespace GITweaks
                     other,
                     saveToDisk,
                     sf.MaxSearchDistance,
+                    sf.MaxSearchAngle,
                     sf.SampleDensityMultiplier,
                     sf.MaxSolverIterationCount,
                     sf.SolverTolerance,
@@ -152,6 +160,7 @@ namespace GITweaks
             MeshRenderer selfMr,
             MeshRenderer otherMr,
             float maxSearchDistance,
+            float maxSearchAngle,
             float sampleDensityMultiplier)
         {
             var result = new List<(SamplePoint, SamplePoint)>();
@@ -166,7 +175,8 @@ namespace GITweaks
             {
                 foreach (var otherSample in otherSamples)
                 {
-                    if (Vector3.Distance(selfSample.vertex, otherSample.vertex) <= maxSearchDistance)
+                    if (Vector3.Distance(selfSample.vertex, otherSample.vertex) <= maxSearchDistance &&
+                        Vector3.Angle(selfSample.normal, otherSample.normal) < maxSearchAngle)
                     {
                         result.Add((selfSample, otherSample));
                     }
@@ -181,6 +191,7 @@ namespace GITweaks
             MeshRenderer otherMr,
             bool saveToDisk,
             float maxSearchDistance,
+            float maxSearchAngle,
             float sampleDensityMultiplier,
             int solveIterations,
             float solveTolerance,
@@ -190,7 +201,7 @@ namespace GITweaks
                 return;
 
             // Generate samples
-            var samplePairs = GenerateSamplePairs(selfMr, otherMr, maxSearchDistance, sampleDensityMultiplier);
+            var samplePairs = GenerateSamplePairs(selfMr, otherMr, maxSearchDistance, maxSearchAngle, sampleDensityMultiplier);
             // TODO: Kernel around each sample
 
             // Get writable lightmaps

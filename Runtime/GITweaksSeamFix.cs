@@ -8,7 +8,8 @@ public class GITweaksSeamFix : MonoBehaviour
 {
     public MeshRenderer[] RenderersToFixSeamsWith;
 
-    [Min(0)] public float MaxSearchDistance = 0.01f;
+    [Range(0, 0.2f)] public float MaxSearchDistance = 0.01f;
+    [Range(0, 180)] public float MaxSearchAngle = 15; 
     [Min(0)] public float SampleDensityMultiplier = 1.1f;
     // TODO: Take normals into account
 
