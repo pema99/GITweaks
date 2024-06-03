@@ -58,7 +58,7 @@ The tweak is configurable via two additional settings:
 ![image](https://github.com/pema99/GITweaks/assets/11212115/9e73b53d-d806-4340-a2ca-0d86fc2cfd66)
 
 ### Fix lightmap seams between objects
-When baking scenes containing surfaces built of multiple modular pieces, you will often get seams where the pieces meet, due to differences in bilinear sampling. Unity has a solution for [fixing seams](https://docs.unity3d.com/Manual/Lightmapping-SeamStitching.html) on a single renderer, but nothing to fix seams between different renderers. This tweak provides some tools for mitigating seams between different renderers.
+When baking scenes containing surfaces built of multiple modular pieces, you will often get seams where the pieces meet, due to differences in bilinear sampling. Unity has a solution for [fixing seams](https://docs.unity3d.com/Manual/Lightmapping-SeamStitching.html) on a single renderer, but nothing to fix seams between different renderers, which is typically worked around by manually merging meshes. This tweak provides some tools for mitigating seams between different renderers.
 
 It can be used in 2 primary ways: As a volume, and as a targeted component. The gif below shows an example of using the "GI Tweaks Seam Fix Volume" variant to fix a seam. Volume components can be quickly created with the right click context menu / GameObject menu.
 
