@@ -57,6 +57,32 @@ The tweak is configurable via two additional settings:
 
 ![image](https://github.com/pema99/GITweaks/assets/11212115/9e73b53d-d806-4340-a2ca-0d86fc2cfd66)
 
+### Fix lightmap seams between objects
+When baking scenes containing surfaces built of multiple modular pieces, you will often get seams where the pieces meet, due to differences in bilinear sampling. Unity has a solution for [fixing seams](https://docs.unity3d.com/Manual/Lightmapping-SeamStitching.html) on a single renderer, but nothing to fix seams between different renderers. This tweak provides some tools for mitigating seams between different renderers.
+
+It can be used in 2 primary ways: As a volume, and as a targeted component. The gif below shows an example of using the "GI Tweaks Seam Fix Volume" variant to fix a seam. Volume components can be quickly created with the right click context menu / GameObject menu.
+
+![s2o3BE4np4](https://github.com/pema99/GITweaks/assets/11212115/c0a9e89e-2693-40ae-a0d5-4284f0358e8a)
+
+![image](https://github.com/pema99/GITweaks/assets/11212115/73b7bce1-09d5-40ce-a6f2-5797b0c5d79f)
+
+The volume component will only attempt to fix seams occuring within the volume. Alternatively, you can use the targeted "GI Tweaks Seam Fix" component, shown below. This component is applied directly onto the object exhibiting seams, and should be provided a list of other renderers contributing to the seams. In this example, the component is applied to a cube, and pointed to another cube, in effect fixing the seam between the 2 cubes.
+
+![l42h87mouz](https://github.com/pema99/GITweaks/assets/11212115/440f165f-2256-44b4-bd8a-08afc3d7cc17)
+
+The tweak is configurable via some additional settings:
+- **Run After Baking** controls whether the seam fix should be applied automatically when baking.
+- **Max Surface Angle** is the maximum allowed angle in degrees between 2 surfaces for them to be considered "the same". This is used to prevent fixing intentional seams, such as the corners of a cube.
+- **Seam Fix Strength** controls how aggresively the seam fixing algorithm blurs the seam.
+- **Max Solver Iteration Count** controls how many iterations the algorithm takes at maximum. Higher numbers may give better quality, but will be slower.
+- **Solver Tolerance** is an error threshold which, when reached, will cause the seam fixing algorithm to stop early.
+- (Volume variant only) **Renderers To Exclude** is a list of renderers to ignore, even if they overlap the volume.
+- (Targeted variant only) **Renderers To Fix Seams With** is a list of renderers to run the seam fixing algorithm for.
+
+The "Preview fix" and "Reset preview" button can be used to non-destructively preview the result of applying the seam fix. "Apply fix" will permanently modify the lightmap texture on disk.
+
+> Note: Seam fixing can be expensive, especially with the volume component. Try not to make huge volumes - instead, keep the small and use only where seams occur.
+
 ### Bulk select renderers
 Making bulk lighting-related changes to renderers in a large scene is tedious. This tool provides a simple way to mass-select renderers based on some configurable filters, for the purpose of multi-editing them. Accesible via "Tools > GI Tweaks > Bulk Renderer Selection".
 
