@@ -1,3 +1,6 @@
+// Uses ideas from https://www.sebastiansylvan.com/post/LeastSquaresTextureSeams/
+// and https://gist.github.com/ssylvan/18fb6875824c14aa2b8c by Sebastian Sylvan, provided under MIT license.
+
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
