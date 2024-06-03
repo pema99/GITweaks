@@ -57,7 +57,8 @@ namespace GITweaks
                 if (lod0 == null) continue;
 
                 var mrs = sharedLOD.RenderersToLightmap;
-                GITweaksLightingDataAssetEditor.CopyAtlasSettingsToRenderers(Lightmapping.lightingDataAsset, lod0, mrs);
+                var lda = GITweaksLightingDataAssetEditor.GetLDAForScene(lod0.gameObject.scene.path);
+                GITweaksLightingDataAssetEditor.CopyAtlasSettingsToRenderers(lda, lod0, mrs);
             }
             if (GITweaksSettingsWindow.IsEnabled(GITweak.Logging) && sharedLODs.Length > 0)
                 Debug.Log($"[GITweaks] Finished re-arranging {sharedLODs.Length} LOD groups for sharing.");
@@ -205,10 +206,49 @@ namespace GITweaks
 
         private static void RepackAtlasses()
         {
-            var lda = Lightmapping.lightingDataAsset;
-            var initialLightmaps = LightmapSettings.lightmaps;
-            if (initialLightmaps.Length == 0 || lda == null)
+            // Find textures used before
+            var usedBefore = LightmapSettings.lightmaps.SelectMany(x => new [] { x.lightmapColor, x.lightmapDir, x.shadowMask }).ToHashSet();
+
+            for (int i = 0; i < SceneManager.sceneCount; i++)
+            {
+                var scene = SceneManager.GetSceneAt(i);
+                RepackAtlassesForScene(scene.path);
+            }
+
+            // Now diff lightmaps, delete unused
+            GITweaksLightingDataAssetEditor.RefreshLDA();
+            var usedAfter = LightmapSettings.lightmaps.SelectMany(x => new[] { x.lightmapColor, x.lightmapDir, x.shadowMask }).ToHashSet();
+            usedBefore.ExceptWith(usedAfter);
+            foreach (var asset in usedBefore)
+            {
+                string assetPath = AssetDatabase.GetAssetPath(asset);
+                if (!string.IsNullOrEmpty(assetPath))
+                    AssetDatabase.DeleteAsset(assetPath);
+            }
+        }
+
+        private static void RepackAtlassesForScene(string scenePath)
+        {
+            var lda = GITweaksLightingDataAssetEditor.GetLDAForScene(scenePath);
+            if (lda == null)
                 return;
+
+            var initialLightmaps = GITweaksLightingDataAssetEditor.GetLightmaps(lda);
+            if (initialLightmaps.Length == 0)
+                return;
+
+            // Find lightmap index offset in case of multiscene
+            var firstLightmap = initialLightmaps[0].lightmapColor;
+            var globalLightmaps = LightmapSettings.lightmaps;
+            int lightmapIndexBase = 0;
+            for (int i = 0; i < globalLightmaps.Length; i++)
+            {
+                if (globalLightmaps[i].lightmapColor == firstLightmap)
+                {
+                    lightmapIndexBase = i;
+                    break;
+                }
+            }
 
             bool hasDirectionality = initialLightmaps[0].lightmapDir != null;
             bool hasShadowmask = initialLightmaps[0].shadowMask != null;
@@ -362,12 +402,10 @@ namespace GITweaks
 
                 var newPair = newLightmapRTs[i];
 
-                string scenePath = Path.ChangeExtension(SceneManager.GetActiveScene().path, null);
-
                 var newColor = GITweaksUtils.RenderTextureToTexture2D(newPair.light);
                 newPair.light.Release();
                 Object.DestroyImmediate(newPair.light);
-                string lmPath = Path.Combine(scenePath, $"Lightmap-{i}_comp_light.exr");
+                string lmPath = AssetDatabase.GetAssetPath(initialLightmaps[0].lightmapColor).Replace("Lightmap-", $"Lightmap-{i}-");
                 File.WriteAllBytes(lmPath, newColor.EncodeToEXR());
                 Object.DestroyImmediate(newColor);
                 AssetDatabase.ImportAsset(lmPath, ImportAssetOptions.ForceSynchronousImport);
@@ -379,7 +417,7 @@ namespace GITweaks
                     var newDir = GITweaksUtils.RenderTextureToTexture2D(newPair.dir);
                     newPair.dir.Release();
                     Object.DestroyImmediate(newPair.dir);
-                    string dirPath = Path.Combine(scenePath, $"Lightmap-{i}_comp_dir.png");
+                    string dirPath = AssetDatabase.GetAssetPath(initialLightmaps[0].lightmapDir).Replace("Lightmap-", $"Lightmap-{i}-");
                     File.WriteAllBytes(dirPath, newDir.EncodeToPNG());
                     Object.DestroyImmediate(newDir);
                     AssetDatabase.ImportAsset(dirPath, ImportAssetOptions.ForceSynchronousImport);
@@ -392,12 +430,12 @@ namespace GITweaks
                     var newShadow = GITweaksUtils.RenderTextureToTexture2D(newPair.shadow);
                     newPair.shadow.Release();
                     Object.DestroyImmediate(newPair.shadow);
-                    string dirPath = Path.Combine(scenePath, $"Lightmap-{i}_comp_shadowmask.png");
-                    File.WriteAllBytes(dirPath, newShadow.EncodeToPNG());
+                    string smPath = AssetDatabase.GetAssetPath(initialLightmaps[0].shadowMask).Replace("Lightmap-", $"Lightmap-{lightmapIndexBase}-{i}-");
+                    File.WriteAllBytes(smPath, newShadow.EncodeToPNG());
                     Object.DestroyImmediate(newShadow);
-                    AssetDatabase.ImportAsset(dirPath, ImportAssetOptions.ForceSynchronousImport);
-                    GITweaksUtils.CopyImporterSettingsAndReimport(initialLightmaps[0].shadowMask, dirPath);
-                    newLightmaps[i].shadowMask = AssetDatabase.LoadAssetAtPath<Texture2D>(dirPath);
+                    AssetDatabase.ImportAsset(smPath, ImportAssetOptions.ForceSynchronousImport);
+                    GITweaksUtils.CopyImporterSettingsAndReimport(initialLightmaps[0].shadowMask, smPath);
+                    newLightmaps[i].shadowMask = AssetDatabase.LoadAssetAtPath<Texture2D>(smPath);
                 }
             }
 
@@ -405,7 +443,7 @@ namespace GITweaks
             GITweaksLightingDataAssetEditor.UpdateLightmaps(lda, newLightmaps);
 
             if (GITweaksSettingsWindow.IsEnabled(GITweak.Logging))
-                Debug.Log($"[GITweaks] Finished re-packing atlasses. " +
+                Debug.Log($"[GITweaks] Finished re-packing atlasses for scene \"{scenePath}\". " +
                     $"New atlas count: {newLightmaps.Length}. " +
                     $"Old atlas count: {initialLightmaps.Length}. " +
                     $"New coverage: {GetCoveragePercentageInRange(atlassingCache) * 100}%. " +

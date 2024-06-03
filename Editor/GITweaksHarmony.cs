@@ -321,14 +321,15 @@ namespace GITweaks
                     SerializedObject obj = (SerializedObject)AccessTools.Field(MainType, "m_SerializedObject").GetValue(self);
                     if (obj.targetObject is MeshRenderer mr)
                     {
-                        if (mr.receiveGI == ReceiveGI.LightProbes && mr.lightmapIndex < 65534 && Lightmapping.lightingDataAsset != null)
+                        if (mr.receiveGI == ReceiveGI.LightProbes && mr.lightmapIndex < 65534)
                         {
                             var rect = EditorGUILayout.GetControlRect();
                             rect.x += 14;
                             rect.width -= 14;
                             if (GUI.Button(rect, "Convert lightmapped to probe-lit"))
                             {
-                                GITweaksLightingDataAssetEditor.MakeRendererProbeLit(Lightmapping.lightingDataAsset, mr);
+                                var lda = GITweaksLightingDataAssetEditor.GetLDAForScene(mr.gameObject.scene.path);
+                                GITweaksLightingDataAssetEditor.MakeRendererProbeLit(lda, mr);
                                 GITweaksLightingDataAssetEditor.RefreshLDA();
                             }
                         }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace GITweaks
 {
@@ -145,11 +146,14 @@ namespace GITweaks
                 seralizedIdToIndex.Add(new SerializedObjectID(main, prefab), i);
             }
 
+            var scene = o.FindProperty("m_Scene").objectReferenceValue as SceneAsset;
+            string scenePath = scene == null ? null : AssetDatabase.GetAssetPath(scene);
+
             // Renderer -> m_LightmappedRendererData
             Component[] mrToAtlasData = new Component[lmIds.arraySize];
             var allMr = Object.FindObjectsByType<MeshRenderer>(FindObjectsSortMode.None).Select(x => x as Component);
             var allTerrain = Object.FindObjectsByType<Terrain>(FindObjectsSortMode.None).Select(x => x as Component);
-            var allRenderer = allMr.Concat(allTerrain);
+            var allRenderer = allMr.Concat(allTerrain).Where(x => x.gameObject.scene.path == scenePath);
             foreach (var mr in allRenderer)
             {
                 using var mainSO = new SerializedObject(mr);
@@ -252,6 +256,27 @@ namespace GITweaks
             o.ApplyModifiedProperties();
         }
 
+        public static LightmapData[] GetLightmaps(LightingDataAsset lda)
+        {
+            using SerializedObject o = new SerializedObject(lda);
+            inspectorModeObject.SetValue(o, InspectorMode.DebugInternal);
+
+            var lms = o.FindProperty("m_Lightmaps");
+            var res = new LightmapData[lms.arraySize];
+            for (int i = 0; i < lms.arraySize; i++)
+            {
+                var lm = lms.GetArrayElementAtIndex(i);
+
+                var lmd = new LightmapData();
+                lmd.lightmapColor = lm.FindPropertyRelative("m_Lightmap").objectReferenceValue as Texture2D;
+                lmd.lightmapDir = lm.FindPropertyRelative("m_DirLightmap").objectReferenceValue as Texture2D;
+                lmd.shadowMask = lm.FindPropertyRelative("m_ShadowMask").objectReferenceValue as Texture2D;
+                res[i] = lmd;
+            }
+
+            return res;
+        }
+
         public static void MakeRendererProbeLit(LightingDataAsset lda, MeshRenderer mr)
         {
             if (lda == null)
@@ -293,6 +318,19 @@ namespace GITweaks
         public static void RefreshLDA()
         {
             Lightmapping.lightingDataAsset = Lightmapping.lightingDataAsset;
+        }
+
+        public static LightingDataAsset GetLDAForScene(string scenePath)
+        {
+            var ldas = Resources.FindObjectsOfTypeAll<LightingDataAsset>();
+            return ldas.FirstOrDefault(x =>
+            {
+                var so = new SerializedObject(x);
+                var sceneRef = so.FindProperty("m_Scene").objectReferenceValue as SceneAsset;
+                if (AssetDatabase.GetAssetPath(sceneRef) == scenePath)
+                    return true;
+                return false;
+            });
         }
     }
 
