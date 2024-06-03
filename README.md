@@ -81,6 +81,8 @@ The tweak is configurable via some additional settings:
 
 The "Preview fix" and "Reset preview" button can be used to non-destructively preview the result of applying the seam fix. "Apply fix" will permanently modify the lightmap texture on disk.
 
+> Note: This tweak **only** fixes hard seams due to differences in bilinear filtering. If the lightmaps have perceptually different colors at the seam, this tweak will not fix that.
+
 > Note: Seam fixing can be expensive, especially with the volume component. Try not to make huge volumes - instead, keep the small and use only where seams occur.
 
 ### Bulk select renderers
