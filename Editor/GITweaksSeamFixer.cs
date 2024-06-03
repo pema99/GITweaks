@@ -228,6 +228,9 @@ namespace GITweaks
                     sf.SolverTolerance,
                     sf.SeamFixStrength);
             }
+
+            if (GITweaksSettingsWindow.IsEnabled(GITweak.Logging) && saveToDisk)
+                Debug.Log($"[GITweaks] Finished applying seam fixes for GameObject \"{sf.gameObject.name}\"");
         }
 
         public static void FixSeams(GITweaksSeamFixVolume sfv, bool saveToDisk)
@@ -261,6 +264,9 @@ namespace GITweaks
                         sfv.SeamFixStrength);
                 }
             }
+
+            if (GITweaksSettingsWindow.IsEnabled(GITweak.Logging) && saveToDisk)
+                Debug.Log($"[GITweaks] Finished applying seam fixes for volume. {filtered.Count} MeshRenderers were taken into account.");
         }
 
         public static List<(SamplePoint self, SamplePoint other)> GenerateSamplePairs(
