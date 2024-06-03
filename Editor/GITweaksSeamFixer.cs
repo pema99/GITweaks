@@ -44,6 +44,9 @@ namespace GITweaks
                 EditorApplication.update += DelayApply;
             }
 
+            if (EditorGUILayout.LinkButton("Open documentation"))
+                Application.OpenURL("https://github.com/pema99/GITweaks/tree/master?tab=readme-ov-file#fix-lightmap-seams-between-objects");
+
             serializedObject.ApplyModifiedProperties();
         }
 
@@ -95,6 +98,9 @@ namespace GITweaks
                 DelayApplyTarget = sfv;
                 EditorApplication.update += DelayApply;
             }
+
+            if (EditorGUILayout.LinkButton("Open documentation"))
+                Application.OpenURL("https://github.com/pema99/GITweaks/tree/master?tab=readme-ov-file#fix-lightmap-seams-between-objects");
 
             serializedObject.ApplyModifiedProperties();
         }
