@@ -5,7 +5,7 @@ using UnityEngine;
 public class GITweaksSeamFix : MonoBehaviour
 {
     public bool RunAfterBaking = true;
-    public MeshRenderer[] RenderersToFixSeamsWith;
+    public MeshRenderer[] RenderersToFixSeamsWith = new MeshRenderer[0];
 
     [Range(0, 180)] public float MaxSurfaceAngle = 15; 
     [Min(0.001f)] public float SeamFixStrength = 5.0f;

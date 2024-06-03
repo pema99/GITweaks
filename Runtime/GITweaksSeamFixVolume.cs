@@ -4,7 +4,7 @@ using UnityEngine;
 public class GITweaksSeamFixVolume : MonoBehaviour
 {
     public bool RunAfterBaking = true;
-    public MeshRenderer[] RenderersToExclude;
+    public MeshRenderer[] RenderersToExclude = new MeshRenderer[0];
 
     [Range(0, 180)] public float MaxSurfaceAngle = 15;
     [Min(0.001f)] public float SeamFixStrength = 5.0f;
