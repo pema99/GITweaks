@@ -13,6 +13,20 @@ All features can be toggled via the settings window in "Tools > GI Tweaks > Sett
 
 ## Current features
 
+- [Share lightmap space across all LODs](#share-lightmap-space-across-all-lods)
+- [Clickable Lightmap Preview charts](#clickable-lightmap-preview-charts)
+- [Lightmap index dropdown in Lightmap Preview window](#lightmap-index-dropdown-in-lightmap-preview-window)
+- [Optimize lightmap sizes after baking](#optimize-lightmap-sizes-after-baking)
+- [Fix lightmap seams between objects](#fix-lightmap-seams-between-objects)
+- [Bulk select renderers](#bulk-select-renderers)
+- [Baked Transmission view modes](#baked-transmission-view-modes)
+- [Better Lighting Data asset inspector](#better-lighting-data-asset-inspector)
+- [Show lightmap flags in default material inspector](#show-lightmap-flags-in-default-material-inspector)
+- [Automatic embedded Lighting Settings](#automatic-embedded-lighting-settings)
+- [Better default Lighting Settings](#better-default-lighting-settings)
+- [Convert lightmapped renderer to probe-lit without rebaking](#convert-lightmapped-renderer-to-probe-lit-without-rebaking)
+- [New and Clone buttons for Skybox material](#new-and-clone-buttons-for-skybox-material)
+
 ### Share lightmap space across all LODs
 When using LOD groups, if you use lightmapping for several LOD levels, each LOD level will take up its own space in the lightmap. This tweak adds a script "GI Tweaks Shared LOD" which lets you reuse the same lightmap space for several LOD levels. Simply attach the script to the GameObject that has the LOD group and bake. Unlike some of the other solutions that exist for this, the script will edit the LightingDataAsset stored on disk, meaning you don't need to manually fiddle with lightmap indices, scales and offsets at runtime.
 
