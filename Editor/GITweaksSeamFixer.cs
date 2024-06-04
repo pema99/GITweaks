@@ -369,7 +369,8 @@ namespace GITweaks
 
             // Get bilinear neighborhood of each sample
             List<PixelInfo> pixelInfo = new List<PixelInfo>();
-            Dictionary<Vector2Int, int> pixelToPixelInfoMap = new Dictionary<Vector2Int, int>(); // TODO: One per lightmap
+            Dictionary<Vector2Int, int> selfPixelToPixelInfoMap = new Dictionary<Vector2Int, int>();
+            Dictionary<Vector2Int, int> otherPixelToPixelInfoMap = new Dictionary<Vector2Int, int>();
             foreach (var samplePoint in samplePairs)
             {
                 Vector2 selfUV = samplePoint.self.uv;
@@ -385,21 +386,21 @@ namespace GITweaks
 
                     Vector2Int offset = new Vector2Int(xOffset, yOffset);
                     Vector2Int selfPos = new Vector2Int((int)selfLightmapUV.x, (int)selfLightmapUV.y) + offset;
-                    if (!pixelToPixelInfoMap.ContainsKey(selfPos) && selfPos.x < selfLightmap.width && selfPos.y < selfLightmap.height)
+                    if (!selfPixelToPixelInfoMap.ContainsKey(selfPos) && selfPos.x < selfLightmap.width && selfPos.y < selfLightmap.height)
                     {
                         int selfIndex = selfPos.y * selfLightmap.width + selfPos.x;
                         //selfColors[selfIndex] = Color.red;
                         pixelInfo.Add(new PixelInfo { color = selfColors[selfIndex], lightmapIndex = selfMr.lightmapIndex, position = selfPos });
-                        pixelToPixelInfoMap.Add(selfPos, pixelInfo.Count - 1);
+                        selfPixelToPixelInfoMap.Add(selfPos, pixelInfo.Count - 1);
                     }
 
                     Vector2Int otherPos = new Vector2Int((int)otherLightmapUV.x, (int)otherLightmapUV.y) + offset;
-                    if (!pixelToPixelInfoMap.ContainsKey(otherPos) && otherPos.x < otherLightmap.width && otherPos.y < otherLightmap.height)
+                    if (!otherPixelToPixelInfoMap.ContainsKey(otherPos) && otherPos.x < otherLightmap.width && otherPos.y < otherLightmap.height)
                     {
                         int otherIndex = otherPos.y * otherLightmap.width + otherPos.x;
                         //otherColors[otherIndex] = Color.magenta;
                         pixelInfo.Add(new PixelInfo { color = otherColors[otherIndex], lightmapIndex = otherMr.lightmapIndex, position = otherPos });
-                        pixelToPixelInfoMap.Add(otherPos, pixelInfo.Count - 1);
+                        otherPixelToPixelInfoMap.Add(otherPos, pixelInfo.Count - 1);
                     }
                 }
             }
@@ -418,7 +419,8 @@ namespace GITweaks
                 otherLightmap.height,
                 edgeConstraintWeight,
                 samplePairs,
-                pixelToPixelInfoMap,
+                selfPixelToPixelInfoMap,
+                otherPixelToPixelInfoMap,
                 pixelInfo,
                 AtA,
                 Atbs,
@@ -512,7 +514,8 @@ namespace GITweaks
             int otherWidth, int otherHeight,
             float edgeConstraintWeight,
             List<(SamplePoint self, SamplePoint other)> samplePairs,
-            Dictionary<Vector2Int, int> pixelToPixelInfoMap,
+            Dictionary<Vector2Int, int> selfPixelToPixelInfoMap,
+            Dictionary<Vector2Int, int> otherPixelToPixelInfoMap,
             List<PixelInfo> pixelInfo,
             SparseMat AtA,
             VectorX[] Atbs,
@@ -525,13 +528,13 @@ namespace GITweaks
             foreach (var samplePair in samplePairs)
             {
                 BilinearSample(
-                    pixelToPixelInfoMap,
+                    selfPixelToPixelInfoMap,
                     UVToLightmap(samplePair.self.uv, selfSt, selfWidth, selfHeight),
                     selfWidth, selfHeight,
                     edgeConstraintWeight,
                     selfIxs, selfWeights);
                 BilinearSample(
-                    pixelToPixelInfoMap,
+                    otherPixelToPixelInfoMap,
                     UVToLightmap(samplePair.other.uv, otherSt, otherWidth, otherHeight),
                     otherWidth, otherHeight, edgeConstraintWeight,
                     otherIxs,
