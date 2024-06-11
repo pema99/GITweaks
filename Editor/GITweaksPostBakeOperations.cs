@@ -17,7 +17,22 @@ namespace GITweaks
         {
             Lightmapping.bakeCompleted -= BakeFinished;
             Lightmapping.bakeCompleted += BakeFinished;
+
+            #if BAKERY_INCLUDED
+            var bakeryType = System.Type.GetType("ftRenderLightmap, BakeryEditorAssembly");
+            if (bakeryType == null)
+                return;
+            var evt = bakeryType.GetEvent("OnFinishedFullRender", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+            if (evt == null)
+                return;
+            evt.RemoveEventHandler(null, (System.EventHandler)BakeryBakeFinished);
+            evt.AddEventHandler(null, (System.EventHandler)BakeryBakeFinished);
+            #endif
         }
+
+        #if BAKERY_INCLUDED
+        private static void BakeryBakeFinished(object sender, System.EventArgs e) => BakeFinished();
+        #endif
 
         private static void BakeFinished()
         {
