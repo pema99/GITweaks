@@ -11,8 +11,6 @@ All features can be toggled via the settings window in "Tools > GI Tweaks > Sett
 
 ![image](https://github.com/pema99/GITweaks/assets/11212115/133bdd9c-7f87-4714-8b1f-ed5eece77c95)
 
-Alternatively, for VRChat Creator Companion (VCC) users, you can [click here](vcc://vpm/addRepo?url=https://raw.githubusercontent.com/pema99/pema99-vpm-repo/main/index.json) to add my repository, after which you can add the package to your projects as normal.
-
 ## Current features
 
 - [Share lightmap space across all LODs](#share-lightmap-space-across-all-lods)
