@@ -1,11 +1,13 @@
 {
   "name": "dev.pema.gitweaks",
-  "version": "0.1.0",
   "displayName": "GI Tweaks",
+  "version": "0.1.0",
+  "unity": "2022.3",
   "description": "Various fixes, tweaks and tools for working with global illumination.",
   "author": {
-    "name": "Pema Malling",
-    "email": "pemamalling@gmail.com",
-    "url": "https://pema.dev"
-  }
+      "name": "Pema Malling"
+  },
+  "hideInEditor": false,
+  "url": "https://github.com/pema99/GITweaks/releases/download/0.1.0/GITweaks-0.1.0.zip",
+  "vpmDependencies": { }
 }
