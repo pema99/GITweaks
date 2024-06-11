@@ -142,7 +142,6 @@ namespace GITweaks
                 ShowTweakToggle(GITweak.BetterLightingSettingsDefaults, "Default to GPU lightmapper and no view prioritization");
                 ShowTweakToggle(GITweak.NewSkyboxButton, "Show New and Clone buttons for skybox materials");
                 ShowTweakToggle(GITweak.LightmapPreviewDropdown, "Show lightmap index dropdown in preview window");
-                ShowTweakToggle(GITweak.LightmappedToProbeLit, "Allow converting lightmapped renderers to probe-lit");
 
                 EditorGUI.BeginChangeCheck();
                 ShowTweakToggle(GITweak.BakedTransmissionViewModes, "Scene view modes for Baked Transmission");
@@ -154,8 +153,9 @@ namespace GITweaks
                         GITweaksViewModes.Deinit();
                 }
 
-                ShowTweakToggle(GITweak.SharedLODGroupComponents, "Apply LOD group lightmap sharing after baking");
                 ShowTweakToggle(GITweak.SeamFixes, "Apply seam fixes after baking");
+                ShowTweakToggle(GITweak.LightmappedToProbeLit, "Allow converting lightmapped renderers to probe-lit");
+                ShowTweakToggle(GITweak.SharedLODGroupComponents, "Apply LOD group lightmap sharing after baking");
                 ShowTweakToggle(GITweak.OptimizeLightmapSizes, "Optimize lightmap sizes after baking");
             }
             EditorGUILayout.EndFoldoutHeaderGroup();
