@@ -21,13 +21,16 @@ namespace GITweaks
 
         private static void BakeFinished()
         {
-            if (GITweaksSettingsWindow.IsEnabled(GITweak.OptimizeLightmapSizes))
-                RepackAtlasses();
+            if (!GITweaksUtils.IsCurrentSceneBakedWithBakery())
+            {
+                if (GITweaksSettingsWindow.IsEnabled(GITweak.OptimizeLightmapSizes))
+                    RepackAtlasses();
 
-            if (GITweaksSettingsWindow.IsEnabled(GITweak.SharedLODGroupComponents))
-                RearrangeLODs();
+                if (GITweaksSettingsWindow.IsEnabled(GITweak.SharedLODGroupComponents))
+                    RearrangeLODs();
 
-            GITweaksLightingDataAssetEditor.RefreshLDA();
+                GITweaksUtils.RefreshLDA();
+            }
 
             if (GITweaksSettingsWindow.IsEnabled(GITweak.SeamFixes))
             {
@@ -216,7 +219,7 @@ namespace GITweaks
             }
 
             // Now diff lightmaps, delete unused
-            GITweaksLightingDataAssetEditor.RefreshLDA();
+            GITweaksUtils.RefreshLDA();
             var usedAfter = LightmapSettings.lightmaps.SelectMany(x => new[] { x.lightmapColor, x.lightmapDir, x.shadowMask }).ToHashSet();
             usedBefore.ExceptWith(usedAfter);
             foreach (var asset in usedBefore)

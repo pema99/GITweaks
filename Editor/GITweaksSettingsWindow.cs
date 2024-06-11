@@ -105,6 +105,7 @@ namespace GITweaks
 
         bool tweakTogglesHeader = true;
         bool lightmapOptimizationHeader = true;
+        Vector2 scrollPosition = Vector2.zero;
 
         private void ShowTweakToggle(GITweak tweak, string label)
         {
@@ -125,6 +126,8 @@ namespace GITweaks
 
         public void OnGUI()
         {
+            using var _ = new EditorGUILayout.ScrollViewScope(scrollPosition);
+
             if (EditorGUILayout.LinkButton("Open feature overview"))
                 Application.OpenURL("https://github.com/pema99/GITweaks/blob/master/README.md#current-features");
 
@@ -151,7 +154,7 @@ namespace GITweaks
                         GITweaksViewModes.Deinit();
                 }
 
-                ShowTweakToggle(GITweak.SharedLODGroupComponents, "Allow shared LOD group components");
+                ShowTweakToggle(GITweak.SharedLODGroupComponents, "Apply LOD group lightmap sharing after baking");
                 ShowTweakToggle(GITweak.SeamFixes, "Apply seam fixes after baking");
                 ShowTweakToggle(GITweak.OptimizeLightmapSizes, "Optimize lightmap sizes after baking");
             }
@@ -199,6 +202,8 @@ namespace GITweaks
             if (tweak == GITweak.LightmappedToProbeLit) return true;
 
             if (tweak == GITweak.OptimizeLightmapSizes) return true;
+
+            if (tweak == GITweak.SharedLODGroupComponents) return true;
 
             return false;
         }

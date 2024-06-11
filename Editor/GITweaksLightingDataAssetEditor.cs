@@ -315,11 +315,6 @@ namespace GITweaks
             o.ApplyModifiedProperties();
         }
 
-        public static void RefreshLDA()
-        {
-            Lightmapping.lightingDataAsset = Lightmapping.lightingDataAsset;
-        }
-
         public static LightingDataAsset GetLDAForScene(string scenePath)
         {
             var ldas = Resources.FindObjectsOfTypeAll<LightingDataAsset>();

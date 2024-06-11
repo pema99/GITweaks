@@ -31,18 +31,18 @@ namespace GITweaks
             EditorGUILayout.BeginHorizontal();
             if (GUILayout.Button("Preview fix"))
             {
-                GITweaksLightingDataAssetEditor.RefreshLDA();
+                GITweaksUtils.RefreshLDA();
                 GITweaksSeamFixer.FixSeams(sf, false);
             }
             if (GUILayout.Button("Reset preview"))
             {
-                GITweaksLightingDataAssetEditor.RefreshLDA();
+                GITweaksUtils.RefreshLDA();
             }
             EditorGUILayout.EndHorizontal();
 
             if (GUILayout.Button("Apply fix"))
             {
-                GITweaksLightingDataAssetEditor.RefreshLDA();
+                GITweaksUtils.RefreshLDA();
                 DelayApplyTarget = sf;
                 EditorApplication.update += DelayApply;
             }
@@ -86,18 +86,18 @@ namespace GITweaks
             EditorGUILayout.BeginHorizontal();
             if (GUILayout.Button("Preview fix"))
             {
-                GITweaksLightingDataAssetEditor.RefreshLDA();
+                GITweaksUtils.RefreshLDA();
                 GITweaksSeamFixer.FixSeams(sfv, false);
             }
             if (GUILayout.Button("Reset preview"))
             {
-                GITweaksLightingDataAssetEditor.RefreshLDA();
+                GITweaksUtils.RefreshLDA();
             }
             EditorGUILayout.EndHorizontal();
 
             if (GUILayout.Button("Apply fix"))
             {
-                GITweaksLightingDataAssetEditor.RefreshLDA();
+                GITweaksUtils.RefreshLDA();
                 DelayApplyTarget = sfv;
                 EditorApplication.update += DelayApply;
             }

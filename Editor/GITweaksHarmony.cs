@@ -313,6 +313,9 @@ namespace GITweaks
 
             static void InjectedMethod(object self)
             {
+                if (GITweaksUtils.IsCurrentSceneBakedWithBakery())
+                    return;
+
                 if (!GITweaksSettingsWindow.IsEnabled(GITweak.LightmappedToProbeLit))
                     return;
 
@@ -330,7 +333,7 @@ namespace GITweaks
                             {
                                 var lda = GITweaksLightingDataAssetEditor.GetLDAForScene(mr.gameObject.scene.path);
                                 GITweaksLightingDataAssetEditor.MakeRendererProbeLit(lda, mr);
-                                GITweaksLightingDataAssetEditor.RefreshLDA();
+                                GITweaksUtils.RefreshLDA();
                             }
                         }
                     }

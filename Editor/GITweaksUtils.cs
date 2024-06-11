@@ -234,6 +234,56 @@ namespace GITweaks
         {
             return mr.realtimeLightmapIndex >= 0 && mr.realtimeLightmapIndex < 65534;
         }
+
+        public static List<Object> GetBakeryLightmapStorages()
+        {
+            var ty = System.Type.GetType("ftLightmapsStorage, BakeryRuntimeAssembly");
+            if (ty == null)
+                return new List<Object>();
+
+            var field = ty.GetField("lastBakeTime");
+            if (field == null)
+                return new List<Object>();
+
+            var objs = Object.FindObjectsByType(ty, FindObjectsSortMode.None);
+            List<Object> result = new List<Object>();
+            foreach (var obj in objs)
+            {
+                int lastBakeTime = (int)field.GetValue(obj);
+                if (lastBakeTime != 0 && obj)
+                    result.Add(obj);
+            }
+            return result;
+        }
+
+        public static bool IsCurrentSceneBakedWithBakery()
+        {
+            return GetBakeryLightmapStorages().Count != 0;
+        }
+
+        public static void RefreshLDA()
+        {
+            #if BAKERY_INCLUDED
+            var lms = GetBakeryLightmapStorages();
+            if (lms.Count == 0)
+            {
+                Lightmapping.lightingDataAsset = Lightmapping.lightingDataAsset;
+                return;
+            }
+
+            LightmapSettings.lightmaps = new LightmapData[0];
+
+            var ty = System.Type.GetType("ftLightmapsStorage, BakeryRuntimeAssembly");
+            var awake = ty.GetMethod("Awake", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+            foreach (var lm in lms)
+            {
+                awake.Invoke(lm, new object[0]);
+            }
+            #else
+            Lightmapping.lightingDataAsset = Lightmapping.lightingDataAsset;
+            #endif
+        }
     }
 
     public class PrefInt
