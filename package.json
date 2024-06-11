@@ -2,7 +2,7 @@
   "name": "dev.pema.gitweaks",
   "version": "0.1.0",
   "displayName": "GI Tweaks",
-  "description": "Various fixes and tweaks for working with global illumination.",
+  "description": "Various fixes, tweaks and tools for working with global illumination.",
   "author": {
     "name": "Pema Malling",
     "email": "pemamalling@gmail.com",
