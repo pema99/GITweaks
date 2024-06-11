@@ -1,5 +1,5 @@
 # GI Tweaks
-This package contains various tools and tweaks for working with global illumination in Unity. Tested with Unity 2022.3 on the Builtin Render Pipeline. [Harmony](https://github.com/pardeike/Harmony) is used for making patches.
+This package contains various tools and tweaks for working with global illumination in Unity. Both Unity's builtin Lightmapper and the third-party Bakery Lightmapper are supported, though not all tweaks work with Bakery. [Harmony](https://github.com/pardeike/Harmony) is used for making patches. Tested with Unity 2022.3 on the Builtin Render Pipeline. 
 
 All features can be toggled via the settings window in "Tools > GI Tweaks > Settings".
 
