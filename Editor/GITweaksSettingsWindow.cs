@@ -136,12 +136,12 @@ namespace GITweaks
             {
                 ShowTweakToggle(GITweak.Logging, "Enable console logging");
                 ShowTweakToggle(GITweak.ClickableLightmapCharts, "Clickable charts in Lightmap Preview Window");
+                ShowTweakToggle(GITweak.LightmapPreviewDropdown, "Show lightmap dropdown in Lightmap Preview Window");
                 ShowTweakToggle(GITweak.BetterLDAInspector, "Better Lighting Data asset inspector");
                 ShowTweakToggle(GITweak.LightmapFlagsDropdown, "Show \"Lightmap Flags\" dropdown in material inspector");
                 ShowTweakToggle(GITweak.AutomaticEmbeddedLightingSettings, "Use embedded Lighting Settings asset for new scenes");
                 ShowTweakToggle(GITweak.BetterLightingSettingsDefaults, "Default to GPU lightmapper and no view prioritization");
                 ShowTweakToggle(GITweak.NewSkyboxButton, "Show New and Clone buttons for skybox materials");
-                ShowTweakToggle(GITweak.LightmapPreviewDropdown, "Show lightmap index dropdown in preview window");
 
                 EditorGUI.BeginChangeCheck();
                 ShowTweakToggle(GITweak.BakedTransmissionViewModes, "Scene view modes for Baked Transmission");
