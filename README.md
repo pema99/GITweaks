@@ -5,11 +5,27 @@ All features can be toggled via the settings window in "Tools > GI Tweaks > Sett
 
 ## How to install
 
+#### Option 1 - Unity Package Manager
+
 1. Open the package manager (Window > Package Manager).
 2. Press the big plus icon, select "Install package from git URL".
 3. Paste the URL of the repo `https://github.com/pema99/GITweaks.git` (note the `.git` ending) and click install.
 
 ![image](https://github.com/pema99/GITweaks/assets/11212115/133bdd9c-7f87-4714-8b1f-ed5eece77c95)
+
+#### Option 2 - VRChat Creator Companion
+
+For VRChat users, the package can be installed via the VRChat Creator companion:
+- [Click here](https://pema99.github.io/vpm/redirect.html).
+- When prompted, open the redirect with VCC.
+- Add the repository. You can now add GITweaks to your projects as normal.
+
+#### Option 3 - Via releases
+
+1. Download the [latest release](https://github.com/pema99/GITweaks/releases) zip.
+2. Open the package manager (Window > Package Manager).
+3. Press the big plus icon, select "Install package from disk".
+4. Select the downloaded zip file.
 
 ## Current features
 
