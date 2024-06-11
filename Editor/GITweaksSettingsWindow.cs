@@ -35,8 +35,8 @@ namespace GITweaks
         - Lighting settings template override
         - Easily switch between lighting settings
         - Probe placement projection guide
-        - Seam stitching across meshes
         - Shadow only debug view
+        X Seam stitching across meshes
         X Dropdown for lightmap index in preview window
         X Atlassing post bake optim
         X Change lightmapped renderer to probe lit without needing rebake
