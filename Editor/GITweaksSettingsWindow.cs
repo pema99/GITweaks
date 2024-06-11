@@ -120,7 +120,7 @@ namespace GITweaks
 
             if (val && IsIncompatible(tweak))
             {
-                EditorGUILayout.HelpBox("This setting is incompatible with Bakery! Do not use it when baking with Bakery.", MessageType.Warning);
+                EditorGUILayout.HelpBox("This setting is incompatible with Bakery! It will have no effect in scenes that are baked with Bakery.", MessageType.Warning);
             }
         }
 

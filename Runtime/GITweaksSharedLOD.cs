@@ -71,7 +71,7 @@ public class GITweaksSharedLODEditor : Editor
         }
 
 #if BAKERY_INCLUDED
-        EditorGUILayout.HelpBox("This component is incompatible with Bakery. If you intend to use Bakery, please disable it.", MessageType.Warning);
+        EditorGUILayout.HelpBox("This component is incompatible with Bakery. It will have no effect when baking using Bakery.", MessageType.Warning);
 #endif
 
         serializedObject.ApplyModifiedProperties();
