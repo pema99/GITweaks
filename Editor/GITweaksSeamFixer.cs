@@ -444,6 +444,19 @@ namespace GITweaks
                     otherColors[px.position.y * otherLightmap.width + px.position.x] = col;
             }
 
+            // Apply gamma curve if needed
+            if (PlayerSettings.colorSpace == ColorSpace.Gamma && saveToDisk)
+            {
+                for (int i = 0; i < selfColors.Length; i++)
+                    selfColors[i] = selfColors[i].linear;
+
+                if (selfMr.lightmapIndex != otherMr.lightmapIndex) // Don't apply it twice
+                {
+                    for (int i = 0; i < otherColors.Length; i++)
+                        otherColors[i] = otherColors[i].linear;
+                }
+            }
+
             // Apply to lightmaps
             selfLightmap.SetPixels(selfColors);
             selfLightmap.Apply();
