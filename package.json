@@ -7,7 +7,5 @@
   "author": {
       "name": "Pema Malling"
   },
-  "hideInEditor": false,
-  "url": "https://github.com/pema99/GITweaks/releases/download/0.1.0/GITweaks-0.1.0.zip",
-  "vpmDependencies": { }
+  "hideInEditor": false
 }
