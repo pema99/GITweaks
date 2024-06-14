@@ -79,7 +79,7 @@ Unity's builtin Lightmapper has a tendency to produce poorly packed lightmaps in
 
 ![image](https://github.com/pema99/GITweaks/assets/11212115/dec8c317-2360-437a-b76d-e8bbbfae7f0a)
 
-When a bake is finished with this tweak enabled, the lightmap packing will be re-done, producing a new set of lightmaps, each of which is packed more tightly. These new lightmaps will often be smaller than the original lightmaps, and may be different sizes. Instances in each lightmap will never be resized, so there should be any noticeable quality difference. Below is the result of using the feature on the lightmap shown above. Before optimization, the scene had a single 512x512 lightmap. After optimization, the scene uses two 256x256 lightmaps - a 2x reduction in VRAM usage:
+When a bake is finished with this tweak enabled, the lightmap packing will be re-done, producing a new set of lightmaps, each of which is packed more tightly. These new lightmaps will often be smaller than the original lightmaps, and may be different sizes. Instances in each lightmap will never be resized, so there shouldn't be any noticeable quality difference. Below is the result of using the feature on the lightmap shown above. Before optimization, the scene had a single 512x512 lightmap. After optimization, the scene uses two 256x256 lightmaps - a 2x reduction in VRAM usage:
 
 ![image](https://github.com/pema99/GITweaks/assets/11212115/157cb1c6-4fac-4d9c-9538-35bd19761ce6)
 
