@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: RenderUVMaskConservative
-  m_Shader: {fileID: 4800000, guid: 56748c5a399cf8f4dbeb09c1d86a9e6d, type: 3}
+  m_Shader: {fileID: 4800000, guid: 09e099655fcb1bc46be2c17cb7a9ca93, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
