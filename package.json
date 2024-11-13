@@ -1,7 +1,7 @@
 {
   "name": "dev.pema.gitweaks",
   "displayName": "GI Tweaks",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "unity": "2022.3",
   "description": "Various fixes, tweaks and tools for working with global illumination.",
   "author": {
