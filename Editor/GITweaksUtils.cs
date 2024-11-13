@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
+using UnityEngine.Rendering;
 
 namespace GITweaks
 {
@@ -24,12 +25,46 @@ namespace GITweaks
             else return GetSTRect((Terrain)c);
         }
 
+        public static bool GetMeshAndUVChannel(MeshRenderer renderer, out Vector2[] uvs, out int uvChannel)
+        {
+            uvs = null;
+            uvChannel = -1;
+            
+            if (renderer.additionalVertexStreams != null)
+            {
+                if (renderer.additionalVertexStreams.HasVertexAttribute(VertexAttribute.TexCoord1))
+                {
+                    uvs = renderer.additionalVertexStreams.uv2;
+                    uvChannel = 1;
+                }
+                else if (renderer.additionalVertexStreams.HasVertexAttribute(VertexAttribute.TexCoord0))
+                {
+                    uvs = renderer.additionalVertexStreams.uv;
+                    uvChannel = 0;
+                }
+            }
+            
+            if (uvChannel == -1)
+            {
+                var mesh = renderer.GetComponent<MeshFilter>().sharedMesh;
+                if (mesh.HasVertexAttribute(VertexAttribute.TexCoord1))
+                {
+                    uvs = mesh.uv2;
+                    uvChannel = 1;
+                }
+                else if (mesh.HasVertexAttribute(VertexAttribute.TexCoord0))
+                {
+                    uvs = mesh.uv;
+                    uvChannel = 0;
+                }
+            }
+            
+            return uvChannel != -1;
+        }
+
         public static Rect ComputeUVBounds(MeshRenderer mr)
         {
-            var mesh = mr.GetComponent<MeshFilter>().sharedMesh;
-            var verts = mesh.uv2;
-            if (verts == null || verts.Length == 0)
-                verts = mesh.uv;
+            GetMeshAndUVChannel(mr, out Vector2[] verts, out _);
             Vector2 minVert = Vector3.positiveInfinity, maxVert = Vector3.negativeInfinity;
             foreach (Vector3 vert in verts)
             {
@@ -89,10 +124,7 @@ namespace GITweaks
             // Scale to uv bounds
             if (mr != null)
             {
-                var mesh = mr.GetComponent<MeshFilter>().sharedMesh;
-                var verts = mesh.uv2;
-                if (verts == null || verts.Length == 0)
-                    verts = mesh.uv;
+                GetMeshAndUVChannel(mr, out Vector2[] verts, out _);
                 Vector2 minVert = Vector3.positiveInfinity;
                 foreach (Vector3 vert in verts)
                 {

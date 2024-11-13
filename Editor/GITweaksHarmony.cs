@@ -1,3 +1,4 @@
+using System;
 using HarmonyLib;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,8 +8,10 @@ using System.Reflection.Emit;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
+using Object = UnityEngine.Object;
 
 namespace GITweaks
 {
@@ -222,10 +225,8 @@ namespace GITweaks
                         uv.y = 1.0f - uv.y;
 
                         // Bakery might create overlapping UVSTs, so we need to find the smallest overlapping one.
-                        GameObject bestChart = null;
-                        float bestChartSize = float.MaxValue;
-
                         GameObject[] cachedTextureObjects = (GameObject[])AccessTools.Field(thisType, "m_CachedTextureObjects").GetValue(__instance);
+                        var candidates = new List<(GameObject go, float size)>();
                         foreach (GameObject cachedTextureObject in cachedTextureObjects)
                         {
                             MeshRenderer mr = cachedTextureObject.GetComponent<MeshRenderer>();
@@ -256,16 +257,75 @@ namespace GITweaks
 
                                 if (stRect.Contains(uv))
                                 {
-                                    float chartSize = stRect.width * stRect.height;
-                                    if (chartSize < bestChartSize)
-                                    {
-                                        bestChartSize = chartSize;
-                                        bestChart = cachedTextureObject;
-                                    }
+                                    candidates.Add((cachedTextureObject, stRect.width * stRect.height));
                                 }
                             }
                         }
+                        
+                        // Find the best candidate
+                        GameObject bestChart = null;
+                        if (candidates.Count == 1)
+                        {
+                            bestChart = candidates[0].go;
+                        }
+                        else if (candidates.Count > 1)
+                        {
+                            int candidateIndex = -1;
 
+                            try
+                            {
+                                // Render a mask of UV charts
+                                Material mat = Resources.Load<Material>(SystemInfo.supportsConservativeRaster ? "RenderUVMaskConservative" : "RenderUVMask");
+                                RenderTexture rt = RenderTexture.GetTemporary(texture.width, texture.height, 0, GraphicsFormat.R32G32B32A32_SFloat);
+                                var prevRT = RenderTexture.active;
+                                RenderTexture.active = rt;
+                                GL.Clear(true, true, Color.black);
+                                for (int i = 0; i < candidates.Count; i++)
+                                {
+                                    var go = candidates[i].go;
+                                    MeshRenderer mr = go.GetComponent<MeshRenderer>();
+                                    MeshFilter mf = go.GetComponent<MeshFilter>();
+                                    var mesh = new Mesh();
+                                    if (mr == null || mf == null)
+                                        continue;
+
+                                    if (!GITweaksUtils.GetMeshAndUVChannel(mr, out var uvs, out var uvIndex))
+                                        continue;
+                                    mesh.vertices = mf.sharedMesh.vertices;
+                                    mesh.uv = uvs;
+                                    mesh.triangles = mf.sharedMesh.triangles;
+                                    
+                                    mat.SetInteger("_CandidateIndex", i + 1); // 1 to avoid writing 0
+                                    mat.SetVector("_CandidateST", mr.lightmapScaleOffset);
+                                    mat.SetPass(0);
+                                    Graphics.DrawMeshNow(mesh, Matrix4x4.identity);
+                                    
+                                    Object.DestroyImmediate(mesh);
+                                }
+                                Texture2D readback = new Texture2D(rt.width, rt.height, TextureFormat.RGBAFloat, false);
+                                readback.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0);
+                                readback.Apply();
+                                RenderTexture.active = prevRT;
+                                RenderTexture.ReleaseTemporary(rt);
+                                candidateIndex = Mathf.RoundToInt(readback.GetPixel((int)(uv.x * readback.width), (int)(uv.y * readback.height)).r - 1);
+                                Object.DestroyImmediate(readback);
+                            }
+                            catch
+                            {
+                                // Ignore, fallback to cheap method
+                            }
+                            
+                            if (candidateIndex >= 0)
+                            {
+                                bestChart = candidates[candidateIndex].go;
+                            }
+                            else
+                            {
+                                // Fall back to picking the smallest bounding box
+                                bestChart = candidates.OrderBy(x => x.size).FirstOrDefault().go;
+                            }
+                        }
+                        
                         if (bestChart != null)
                         {
                             Selection.activeGameObject = bestChart;
